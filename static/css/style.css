@@ -1,0 +1,51 @@
+
+body {
+    margin:0;
+    font-family: Arial, Helvetica, sans-serif
+}
+
+nav {
+    margin:0;
+    background-color: #00182b;
+    color: white; 
+}
+
+footer {
+    display: flex;
+    padding: 10px; 
+    background: #001724; 
+    color: white; 
+    text-align: center;
+    bottom: -100;
+    justify-content: center;
+}
+
+a:link, a:visited, a:hover, a:active {
+    color: white; /* Przykładowy niebieski kolor dla linków */
+    text-decoration: none; /* Opcjonalnie usuwa podkreślenie linków */
+}
+
+
+.team-logo-img {
+    width:200px;
+    height: 200px;
+}
+
+.page-logo-img {
+    /* Usuń marginesy, jeśli logo ma być po lewej */
+    width: 100px; /* Ustaw konkretne wymiary dla logo */
+    height: auto; /* Zachowaj proporcje obrazu */
+}
+
+.header {
+    display: grid;
+    grid-template-columns: auto 1fr; /* Logo ma auto szerokość, h1 zajmuje pozostałą przestrzeń */
+    align-items: center; /* Dla wyśrodkowania pionowego */
+    justify-content: start; /* Rozpoczyna zawartość od lewej strony kontenera */
+    gap: 20px; /* Odstęp między logo a h1 */
+}
+
+h1 {
+    margin-left: 20px; /* Dodaj odstęp między logo a h1 */
+    /* Nie używaj 'flex-grow' jeśli tekst ma być bezpośrednio obok logo */
+}
