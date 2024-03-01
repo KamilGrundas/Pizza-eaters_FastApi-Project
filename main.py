@@ -1,9 +1,11 @@
 from fastapi import FastAPI
 import uvicorn
+from src.routes import tags
 
 app = FastAPI()
 
-
+app.include_router(tags.router, prefix='/api')
+#app.include_router(photos.router, prefix='/api')
 @app.get("/")
 def index():
     return {"msg": "Hello World"}
