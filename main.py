@@ -7,6 +7,7 @@ from fastapi.staticfiles import StaticFiles
 from src.database.db import get_db
 from fastapi import Depends
 from src.routes import fake_pictures #, tags
+from sqlalchemy.orm import Session
 
 app = FastAPI()
 
