@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container">
+	{% for description in context["pictures"]["Pictures id"] %}
+
+    <div class="image-box">
+        <img src="https://cdn.pixabay.com/photo/2023/03/17/16/55/man-7859085_640.jpg" alt="">
+        <div>{{description}}</div>
+    </div>
+
+	{% endfor %}
+</div>
+{% endblock %}
