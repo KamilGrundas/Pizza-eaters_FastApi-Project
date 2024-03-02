@@ -1,7 +1,6 @@
 from typing import List
 
 from fastapi import Depends, APIRouter, status, HTTPException
-from fastapi_limiter.depends import RateLimiter
 from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.schemas import CommentBase, CommentResponse

@@ -7,7 +7,6 @@ SQLALCHEMY_DATABASE_URL = (
 )  # zmieniłam to, żeby każdy mógł sobie lokalnie podpiąć taką bazę danych jaką chce, niekoniecznie sqlite'a.
 
 engine = create_engine(SQLALCHEMY_DATABASE_URL)
-
 SessionLocal = sessionmaker(autocommit=False, autoflush=False, bind=engine)
 
 
