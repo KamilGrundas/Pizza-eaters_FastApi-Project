@@ -8,6 +8,10 @@ class Settings(BaseSettings):
     postgres_password: str
     postgres_port: int
 
+    cloud_name: str
+    api_key: str
+    api_secret: str
+
     sqlalchemy_database_url: str
 
     class Config:

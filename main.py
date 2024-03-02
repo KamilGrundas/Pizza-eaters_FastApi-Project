@@ -15,9 +15,9 @@ from dotenv import load_dotenv
 import os
 
 load_dotenv()
-# cloud_name = os.getenv("CLOUD_NAME")
-# api_key = os.getenv("API_KEY")
-# api_secret = os.getenv("API_SECRET")
+cloud_name = os.getenv("CLOUD_NAME")
+api_key = os.getenv("API_KEY")
+api_secret = os.getenv("API_SECRET")
 postgres_db = os.getenv("POSTGRES_DB")
 postgres_user = os.getenv("POSTGRES_USER")
 postgres_password = os.getenv("POSTGRES_PASSWORD")
@@ -47,11 +47,12 @@ async def get_home(request: Request, db: Session = Depends(get_db)):
     context = {"pictures" : pictures}
     return templates.TemplateResponse("index.html", {"request": request, "context":context})
 
-cloudinary.config(
-    cloud_name="dgyprxcgw",
-    api_key="757342411396421",
-    api_secret="Q6d3H7LqY7wYHUxObc9_0Z_f_cw"
-)
+
+# cloudinary.config(
+#     cloud_name=os.getenv("CLOUD_NAME"),
+#     api_key=os.getenv("API_KEY"),
+#     api_secret=os.getenv("API_SECRET")
+# )
 
 
 @app.post("/delete_picture/")
@@ -127,7 +128,7 @@ async def edit_image_rotate(public_id: str, file: UploadFile = File(...), angle:
 
 def get_image_url(public_id):
     try:
-        return {"image_url": f"https://res.cloudinary.com/dgyprxcgw/image/upload/{public_id}"}
+        return {"image_url": f"https://res.cloudinary.com/{cloud_name}/image/upload/{public_id}"}
     except Exception as e:
         raise HTTPException(status_code=404, detail=f"Error while getting image URL: {e}")
 
