@@ -15,3 +15,4 @@ class User(Base):
     # role = Column()
     admin = Column(Boolean, default=False)
     mod = Column(Boolean, default=False)
+    standard_user = Column(Boolean, default=False)
