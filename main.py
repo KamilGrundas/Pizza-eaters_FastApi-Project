@@ -1,13 +1,17 @@
 from fastapi import FastAPI
 import uvicorn
+from src.routes import 
 from fastapi import FastAPI, Request
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from src.routes import fake_pictures
+from src.routes import fake_pictures, tags
+
 
 app = FastAPI()
+
 app.include_router(fake_pictures.router, prefix="/wizards")
+app.include_router(tags.router, prefix='/wizards')
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
