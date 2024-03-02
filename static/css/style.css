@@ -12,16 +12,16 @@ a{color:inherit;text-decoration:none}
 
 nav {
     margin:0;
-    background-color: #00182b;
+    background-color: lightgray;
     height: 100px;
-    color: white;
-    box-shadow:0 12px 15px 0 rgba(0,0,0,.24),0 17px 50px 0 rgba(0,0,0,.19);
+    color: black;
+    box-shadow: 0 10px 10px -5px rgba(255, 255, 255, 0.1);
 }
 
 footer {
     display: flex;
     padding: 10px; 
-    background: #001724; 
+    background: black; 
     color: white; 
     text-align: center;
     bottom: -100;
@@ -36,7 +36,7 @@ a:link, a:visited, a:hover, a:active {
 
 .team-logo-img {
     width:200px;
-    height: 200px;
+    height: auto;
 }
 
 .page-logo-img {
@@ -58,7 +58,6 @@ a:link, a:visited, a:hover, a:active {
         url('/static/images/login-background.jpg'); /* Obraz tła */
 	/* background:url("/static/images/login-background.jpg") no-repeat center; */
     background-size: cover;
-	box-shadow:0 12px 15px 0 rgba(0,0,0,.24),0 17px 50px 0 rgba(0,0,0,.19);
 }
 .login-html{
 	width:50%;
