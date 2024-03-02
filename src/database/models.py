@@ -37,7 +37,7 @@ class Tag(Base):
 class Picture(Base):
     __tablename__ = "pictures"
     id = Column(Integer, primary_key=True, autoincrement=True)
-    tags = relationship("Tag", secondary=note_m2m_tag, backref="pictures")
+    tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
     # wstawiłam tyle tylko, żeby mi lokalnie błędu nie wywalało - Olka
 
 
