@@ -189,3 +189,26 @@ a:link, a:visited, a:hover, a:active {
 .foot-lnk{
 	text-align:center;
 }
+
+.container {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.image-box img {
+    height: 400px;
+}
+
+.image-box {
+    margin: 10px;
+    padding: 10px;
+    background-color: black;
+    color: white;
+    border-radius: 10px;
+}
+
+.image-box:hover {
+    transform: scale(1.03);
+    transition: all 0.3s;
+}
