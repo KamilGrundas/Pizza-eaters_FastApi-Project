@@ -8,6 +8,17 @@ from src.database.db import get_db
 from fastapi import Depends
 from src.routes import fake_pictures #, tags
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
+import os
+
+load_dotenv()
+# cloud_name = os.getenv("CLOUD_NAME")
+# api_key = os.getenv("API_KEY")
+# api_secret = os.getenv("API_SECRET")
+postgres_db = os.getenv("POSTGRES_DB")
+postgres_user = os.getenv("POSTGRES_USER")
+postgres_password = os.getenv("POSTGRES_PASSWORD")
+postgres_port = os.getenv("POSTGRES_PORT")
 
 app = FastAPI()
 
