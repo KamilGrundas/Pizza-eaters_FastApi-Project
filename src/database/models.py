@@ -17,7 +17,7 @@ class User(Base):
     # role = Column()
     admin = Column(Boolean, default=False)
     mod = Column(Boolean, default=False)
-
+    standard_user = Column(Boolean, default=False)
 
 class Picture(Base):
     __tablename__ = "pictures"
@@ -36,3 +36,4 @@ class Comment(Base):
     is_deleted = Column(
         Boolean, default=False
     )  # to jest soft delete ;) komentarz po usunięciu będzie w bazie danych ale nie będzie wyświetlany
+    
