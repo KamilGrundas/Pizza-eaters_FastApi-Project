@@ -6,13 +6,21 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from src.database.db import get_db
 from fastapi import Depends
-from src.routes import fake_pictures #, tags
+from src.routes import fake_pictures, tags
 from sqlalchemy.orm import Session
+from dotenv import load_dotenv
+import os
+load_dotenv()
+postgres_db = os.getenv("POSTGRES_DB")
+postgres_user = os.getenv("POSTGRES_USER")
+postgres_password = os.getenv("POSTGRES_PASSWORD")
+postgres_port = os.getenv("POSTGRES_PORT")
+
 
 app = FastAPI()
 
 app.include_router(fake_pictures.router, prefix="/wizards")
-#app.include_router(tags.router, prefix='/wizards')
+app.include_router(tags.router, prefix='/wizards')
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
