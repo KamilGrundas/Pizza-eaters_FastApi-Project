@@ -6,6 +6,13 @@ from sqlalchemy.sql.schema import ForeignKey
 
 Base = declarative_base()
 
+picture_m2m_tag = Table(
+    "picture_m2m_tag",
+    Base.metadata,
+    Column("id", Integer, primary_key=True),
+    Column("picture_id", Integer, ForeignKey("pictures.id", ondelete="CASCADE")),
+    Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
+)
 
 class User(Base):
     __tablename__ = "users"
@@ -19,9 +26,18 @@ class User(Base):
     mod = Column(Boolean, default=False)
     standard_user = Column(Boolean, default=False)
 
+
+class Tag(Base):
+    __tablename__ = "tags"
+    id = Column(Integer, primary_key=True)
+    name = Column(String(25), nullable=False, unique=True)
+    
+    
+
 class Picture(Base):
     __tablename__ = "pictures"
     id = Column(Integer, primary_key=True, autoincrement=True)
+    tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
     # wstawiłam tyle tylko, żeby mi lokalnie błędu nie wywalało - Olka
 
 
