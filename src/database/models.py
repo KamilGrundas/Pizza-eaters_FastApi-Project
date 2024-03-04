@@ -7,7 +7,7 @@ from sqlalchemy.sql.schema import ForeignKey
 Base = declarative_base()
 
 picture_m2m_tag = Table(
-    "note_m2m_tag",
+    "picture_m2m_tag",
     Base.metadata,
     Column("id", Integer, primary_key=True),
     Column("picture_id", Integer, ForeignKey("pictures.id", ondelete="CASCADE")),
