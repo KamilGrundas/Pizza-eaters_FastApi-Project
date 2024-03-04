@@ -42,8 +42,8 @@ async def login_page(request: Request):
 
 
 @app.get("/", response_class=HTMLResponse)
-async def get_home(request: Request, db: Session = Depends(get_db)):
-    pictures =  await fake_pictures.display_pictures(db)
+async def get_home(request: Request):
+    pictures = fake_pictures.get_all_image_urls()
     context = {"pictures" : pictures}
     return templates.TemplateResponse("index.html", {"request": request, "context":context})
 
