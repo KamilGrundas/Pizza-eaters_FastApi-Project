@@ -1,0 +1,17 @@
+{% extends 'base.html' %}
+
+{% block title %}Address verification{% endblock %}
+
+{% block content %}
+    <p>Hi {{username}},</p>
+    <p>Thank you for signing up for our service.</p>
+    <p>Please click the following link to verify your email address:</p>
+    <p>
+        <a href="{{host}}auth/confirmed_email/{{token}}">
+            Verification
+        </a>
+    </p>
+    <p>If you did not sign up for the service, please ignore this email.</p>
+    <p>Thanks,</p>
+    <p>Our Team</p>
+{% endblock %}

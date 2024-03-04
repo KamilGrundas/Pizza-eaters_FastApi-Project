@@ -7,11 +7,12 @@ from pydantic import BaseModel
 from enum import Enum
 from sqlalchemy import update
 from sqlalchemy.orm import Session
-
+from src.conf.config import settings
 app = FastAPI()
 
-SECRET_KEY = "top_secret"
-ALGORITHM = "HS256"
+
+SECRET_KEY = settings.secret_key
+ALGORITHM = settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
@@ -132,17 +133,17 @@ def get_current_active_user(current_user: User = Depends(get_current_user)):
 
 
 def is_administrator(current_user: User = Depends(get_current_user)):
-    if current_user["role"] != UserRoleEnum.ADMIN:
+    if current_user.role != UserRoleEnum.ADMIN:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!")
 
 
 def is_moderator(current_user: User = Depends(get_current_user)):
-    if current_user["role"] not in [UserRoleEnum.ADMIN, User.MOD]:
+    if current_user.role not in [UserRoleEnum.ADMIN, User.MOD]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!")
 
 
 def is_standard_user(current_user: User = Depends(get_current_user)):
-    if current_user["role"] != UserRoleEnum.STANDARD_USER:
+    if current_user.role != UserRoleEnum.STANDARD_USER:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!")
 
 
