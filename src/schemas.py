@@ -39,7 +39,7 @@ class UserDb(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserResponse(BaseModel):
@@ -63,4 +63,4 @@ class TagResponse(TagModel):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
