@@ -14,6 +14,7 @@ picture_m2m_tag = Table(
     Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
 )
 
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
@@ -31,13 +32,13 @@ class Tag(Base):
     __tablename__ = "tags"
     id = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False, unique=True)
-    
-    
+
 
 class Picture(Base):
     __tablename__ = "pictures"
     id = Column(Integer, primary_key=True, autoincrement=True)
     tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
+    comments = relationship("Comment", backref="pictures")
     # wstawiłam tyle tylko, żeby mi lokalnie błędu nie wywalało - Olka
 
 
@@ -52,4 +53,3 @@ class Comment(Base):
     is_deleted = Column(
         Boolean, default=False
     )  # to jest soft delete ;) komentarz po usunięciu będzie w bazie danych ale nie będzie wyświetlany
-    

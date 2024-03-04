@@ -14,7 +14,7 @@ router = APIRouter(prefix="/pictures", tags=["pictures"])
 router.include_router(comments.router)
 
 
-# to jest do zastąpienia
+# to jest do zastąpienia albo rozbudowania i zmiany z fake_pictures.py na pictures.py
 
 
 @router.get("/")
