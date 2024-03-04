@@ -25,6 +25,7 @@ class CommentResponse(CommentBase):
         from_attributes = True
 
 
+
 class UserModel(BaseModel):
     username: str = Field(min_length=5, max_length=16)
     email: str
@@ -38,7 +39,7 @@ class UserDb(BaseModel):
     created_at: datetime
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class UserResponse(BaseModel):
@@ -55,13 +56,11 @@ class TokenModel(BaseModel):
 class RequestEmail(BaseModel):
     email: EmailStr
 
-
 class TagModel(BaseModel):
     name: str = Field(max_length=25)
-
 
 class TagResponse(TagModel):
     id: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
