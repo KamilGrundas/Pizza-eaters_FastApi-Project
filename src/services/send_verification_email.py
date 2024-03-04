@@ -3,7 +3,8 @@ from fastapi_mail import FastMail, MessageSchema, ConnectionConfig, MessageType
 from fastapi_mail.errors import ConnectionErrors
 from pydantic import EmailStr
 from src.conf.config import settings
-from email_token import auth_service
+from src.services.auth import create_email_token
+
 
 conf = ConnectionConfig(
     MAIL_USERNAME=settings.mail_username,
@@ -11,9 +12,9 @@ conf = ConnectionConfig(
     MAIL_FROM=settings.mail_from,
     MAIL_PORT=settings.mail_port,
     MAIL_SERVER=settings.mail_server,
-    MAIL_FROM_NAME='Fast API',
-    MAIL_STARTTLS=False,
-    MAIL_SSL_TLS=True,
+    MAIL_FROM_NAME='Rest API Wizards',
+    MAIL_STARTTLS=True,
+    MAIL_SSL_TLS=False,
     USE_CREDENTIALS=True,
     VALIDATE_CERTS=True,
     TEMPLATE_FOLDER=Path(__file__).parent / 'templates',
@@ -23,8 +24,7 @@ conf = ConnectionConfig(
 async def send_email(email: EmailStr, username: str, host: str):
 
     try:
-        token_verification = auth_service.create_email_token({"sub": email})
-
+        token_verification = create_email_token({"sub": email})
         message = MessageSchema(
             subject="Confirm your email",
             recipients=[email],
