@@ -5,33 +5,17 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from src.database.db import get_db
 from fastapi import Depends
-from src.routes import fake_pictures, tags
+from src.routes import auth, fake_pictures, tags
 from sqlalchemy.orm import Session
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 from fastapi import FastAPI, File, UploadFile
-from dotenv import load_dotenv
-import os
-
-load_dotenv()
-cloud_name = os.getenv("CLOUD_NAME")
-api_key = os.getenv("API_KEY")
-api_secret = os.getenv("API_SECRET")
-
-postgres_db = os.getenv("POSTGRES_DB")
-postgres_user = os.getenv("POSTGRES_USER")
-postgres_password = os.getenv("POSTGRES_PASSWORD")
-postgres_port = os.getenv("POSTGRES_PORT")
 
 
 app = FastAPI()
 
 
 # app.include_router(image_upload.router)
-
+app.include_router(auth.router, prefix='/api')
 app.include_router(fake_pictures.router, prefix="/wizards")
-
 app.include_router(tags.router, prefix='/wizards')
 
 
@@ -47,15 +31,8 @@ async def login_page(request: Request):
 @app.get("/", response_class=HTMLResponse)
 async def get_home(request: Request):
     pictures = fake_pictures.get_all_image_urls()
-    context = {"pictures" : pictures}
-    return templates.TemplateResponse("index.html", {"request": request, "context":context})
-
-
-cloudinary.config(
-    cloud_name=os.getenv("CLOUD_NAME"),
-    api_key=os.getenv("API_KEY"),
-    api_secret=os.getenv("API_SECRET")
-)
+    context = {"pictures": pictures}
+    return templates.TemplateResponse("index.html", {"request": request, "context": context})
 
 
 if __name__ == "__main__":

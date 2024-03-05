@@ -1,19 +1,28 @@
 from fastapi import Depends, APIRouter, File, UploadFile, HTTPException
 import cloudinary
 import cloudinary.uploader
+import cloudinary.api
 from sqlalchemy.orm import Session
 from src.database.db import get_db
-from src.database.models import Picture
-from dotenv import load_dotenv
-import os
+from src.database.models import Picture, QRCode
+
+import qrcode
 from src.routes import comments
+from src.schemas import QRCodeRequest
 
 from src.conf.config import settings
 
 from src.services.exceptions_func import no_picture_exception
 
-load_dotenv()
-cloud_name = os.getenv("CLOUD_NAME")
+cloud_name = settings.cloud_name
+api_key = settings.api_key
+api_secret = settings.api_secret
+
+cloudinary.config(
+    cloud_name=cloud_name,
+    api_key=api_key,
+    api_secret=api_secret
+)
 
 router = APIRouter(prefix="/pictures", tags=["pictures"])
 router.include_router(comments.router)
@@ -128,4 +137,33 @@ def get_image_url(public_id):
         raise HTTPException(status_code=404, detail=f"Error while getting image URL: {e}")
 
 
+@router.post("/generate_qr_code/")
+async def generate_qr_code(qr_code_request: QRCodeRequest, db: Session = Depends(get_db)):
+    # Generate QR code
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=2,
+    )
+    qr.add_data(qr_code_request.transformed_photo_url)
+    qr.make(fit=True)
+    qr_img = qr.make_image(fill_color="black", back_color="white")
 
+    qr_img_path = f"qr_codes/{qr_code_request.transformed_photo_url.replace('/', '_').replace(':', '_')}.png"
+    qr_img.save(qr_img_path)
+
+    # Save QR code URL to the database
+    qr_code = QRCode(url=qr_img_path)
+    db.add(qr_code)
+    db.commit()
+
+    return {"qr_code_url": qr_img_path}
+
+
+@router.get("/qr_code/{qr_code_id}")
+async def get_qr_code(qr_code_id: int, db: Session = Depends(get_db)):
+    qr_code = db.query(QRCode).filter(QRCode.id == qr_code_id).first()
+    if not qr_code:
+        raise HTTPException(status_code=404, detail="QR code not found")
+    return qr_code.url

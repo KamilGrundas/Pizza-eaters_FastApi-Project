@@ -22,6 +22,7 @@ class User(Base):
     email = Column(String(250), nullable=False, unique=True)
     password = Column(String(255), nullable=False)
     created_at = Column("crated_at", DateTime, default=func.now())
+    confirmed = Column(Boolean, default=False)
     # role = Column()
     admin = Column(Boolean, default=False)
     mod = Column(Boolean, default=False)
@@ -53,3 +54,11 @@ class Comment(Base):
     is_deleted = Column(
         Boolean, default=False
     )  # to jest soft delete ;) komentarz po usunięciu będzie w bazie danych ale nie będzie wyświetlany
+
+
+class QRCode(Base):
+    __tablename__ = "qrcodes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    url = Column(String)
+    transformed_photo_url = Column(String)

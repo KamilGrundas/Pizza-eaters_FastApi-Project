@@ -1,4 +1,4 @@
-from fastapi import Depends, FastAPI, HTTPException, status
+from fastapi import Depends, HTTPException, status
 from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
@@ -8,7 +8,6 @@ from enum import Enum
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 from src.conf.config import settings
-app = FastAPI()
 
 
 SECRET_KEY = settings.secret_key
@@ -109,6 +108,29 @@ def verify_token(token: str = Depends(oauth2_scheme)):
         raise credentials_exception
 
 
+def create_email_token(data: dict) -> str:
+
+    to_encode = data.copy()
+    expire = datetime.utcnow() + timedelta(days=7)
+    to_encode.update({"iat": datetime.utcnow(), "exp": expire})
+    token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
+    return token
+
+
+def get_email_from_token(token: str) -> str:
+
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload["sub"]
+        return email
+    except JWTError as e:
+        print(e)
+        raise HTTPException(
+            status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
+            detail="Invalid token for email verification"
+        )
+
+
 def get_current_user(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
@@ -145,5 +167,3 @@ def is_moderator(current_user: User = Depends(get_current_user)):
 def is_standard_user(current_user: User = Depends(get_current_user)):
     if current_user.role != UserRoleEnum.STANDARD_USER:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!")
-
-
