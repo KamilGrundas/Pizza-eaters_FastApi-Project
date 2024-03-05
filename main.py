@@ -7,11 +7,7 @@ from src.database.db import get_db
 from fastapi import Depends
 from src.routes import auth, fake_pictures, tags
 from sqlalchemy.orm import Session
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 from fastapi import FastAPI, File, UploadFile
-import os
 
 
 app = FastAPI()

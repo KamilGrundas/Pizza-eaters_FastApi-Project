@@ -1,11 +1,11 @@
 from fastapi import Depends, APIRouter, File, UploadFile, HTTPException
 import cloudinary
 import cloudinary.uploader
+import cloudinary.api
 from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.database.models import Picture, QRCode
-from dotenv import load_dotenv
-import os
+
 import qrcode
 from src.routes import comments
 from src.schemas import QRCodeRequest
@@ -14,8 +14,15 @@ from src.conf.config import settings
 
 from src.services.exceptions_func import no_picture_exception
 
-load_dotenv()
-cloud_name = os.getenv("CLOUD_NAME")
+cloud_name = settings.cloud_name
+api_key = settings.api_key
+api_secret = settings.api_secret
+
+cloudinary.config(
+    cloud_name=cloud_name,
+    api_key=api_key,
+    api_secret=api_secret
+)
 
 router = APIRouter(prefix="/pictures", tags=["pictures"])
 router.include_router(comments.router)
