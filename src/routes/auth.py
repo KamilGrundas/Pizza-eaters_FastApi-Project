@@ -44,8 +44,8 @@ async def login(
     if not auth.verify_password(body.password, user.password):
         raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
 
-    access_token = await auth.create_access_token(data={"sub": user.email})
-    refresh_token = await auth.create_refresh_token(data={"sub": user.email})
+    access_token = auth.create_access_token(data={"sub": user.email})
+    refresh_token = auth.create_refresh_token(data={"sub": user.email})
     await repository_users.update_token(user, refresh_token, db)
     return {"access_token": access_token, "refresh_token": refresh_token, "token_type": "bearer"}
 
@@ -53,8 +53,8 @@ async def login(
 @router.get('/confirmed_email/{token}')
 async def confirmed_email(token: str, db: Session = Depends(get_db)):
 
-    email = await auth.get_email_from_token(token)
-    user = await repository_users.get_user_by_email(email, db)
+    email = auth.get_email_from_token(token)
+    user = repository_users.get_user_by_email(email, db)
     if user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Verification error")
     if user.confirmed:
