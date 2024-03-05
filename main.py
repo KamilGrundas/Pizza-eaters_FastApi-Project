@@ -34,6 +34,11 @@ async def get_home(request: Request):
     context = {"pictures": pictures}
     return templates.TemplateResponse("index.html", {"request": request, "context": context})
 
+@app.get("/picture-detail/", response_class=HTMLResponse)
+async def get_home(request: Request):
+    pictures = fake_pictures.get_all_image_urls()
+    context = {"pictures": pictures}
+    return templates.TemplateResponse("picture.html", {"request": request, "context": context})
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
