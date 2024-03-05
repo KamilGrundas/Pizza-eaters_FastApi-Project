@@ -53,4 +53,11 @@ class Comment(Base):
     is_deleted = Column(
         Boolean, default=False
     )  # to jest soft delete ;) komentarz po usunięciu będzie w bazie danych ale nie będzie wyświetlany
-    
+
+
+class QRCode(Base):
+    __tablename__ = "qrcodes"
+
+    id = Column(Integer, primary_key=True, index=True)
+    url = Column(String)
+    transformed_photo_url = Column(String)
