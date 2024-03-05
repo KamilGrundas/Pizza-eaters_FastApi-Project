@@ -64,3 +64,16 @@ class TagResponse(TagModel):
 
     class Config:
         from_attributes = True
+
+
+class QRCodeModel(BaseModel):
+    id: int
+    url: str
+    transformed_photo_url: str
+
+    class Config:
+        orm_mode = True
+
+
+class QRCodeRequest(BaseModel):
+    transformed_photo_url: str
