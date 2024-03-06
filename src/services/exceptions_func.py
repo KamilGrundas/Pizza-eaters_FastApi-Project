@@ -9,11 +9,16 @@ from fastapi import HTTPException, status
 
 
 def no_picture_exception(picture_id: int, db: Session):
+
+    exc = HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found"
+    )
     picture = db.query(Picture).filter(Picture.id == picture_id).first()
     if bool(picture) == False:
-        raise HTTPException(
-            status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found"
-        )
+        raise exc
+
+    if picture.is_deleted:
+        raise exc
 
 
 def no_comment_exception(comment_id: int, db: Session):

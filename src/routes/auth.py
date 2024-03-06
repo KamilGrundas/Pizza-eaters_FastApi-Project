@@ -13,7 +13,6 @@ from src.database.db import get_db
 from src.schemas import UserResponse, UserModel, TokenModel, RequestEmail
 
 from src.services import send_verification_email
-from src.services.auth import auth_service
 
 from src.services.send_verification_email import send_email
 from src.services import auth
@@ -39,12 +38,18 @@ async def signup(
     exist_user = await repository_users.get_user_by_email(body.email, db)
     if exist_user:
 
-        raise HTTPException(status_code=status.HTTP_409_CONFLICT, detail="Account already exists")
+        raise HTTPException(
+            status_code=status.HTTP_409_CONFLICT, detail="Account already exists"
+        )
     body.password = auth.get_hash_password(body.password)
     new_user = await repository_users.create_user(body, db)
-    background_tasks.add_task(send_email, new_user.email, new_user.username, request.base_url)
-    return {"user": new_user, "detail": "User successfully created. Check your email for confirmation."}
-
+    background_tasks.add_task(
+        send_email, new_user.email, new_user.username, request.base_url
+    )
+    return {
+        "user": new_user,
+        "detail": "User successfully created. Check your email for confirmation.",
+    }
 
 
 @router.post("/login", response_model=TokenModel)
@@ -59,10 +64,13 @@ async def login(
         )
     if not user.confirmed:
 
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Email not confirmed")
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Email not confirmed"
+        )
     if not auth.verify_password(body.password, user.password):
-        raise HTTPException(status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password")
-
+        raise HTTPException(
+            status_code=status.HTTP_401_UNAUTHORIZED, detail="Invalid password"
+        )
 
     access_token = auth.create_access_token(data={"sub": user.email})
     refresh_token = auth.create_refresh_token(data={"sub": user.email})
@@ -109,6 +117,7 @@ async def request_email(
         }
     if user:
 
-        background_tasks.add_task(send_email, user.email, user.username, request.base_url)
+        background_tasks.add_task(
+            send_email, user.email, user.username, request.base_url
+        )
     return {"message": "Check your email for confirmation."}
-

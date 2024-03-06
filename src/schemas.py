@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
+from typing import List
 from datetime import datetime
 
 
@@ -24,6 +25,13 @@ class CommentResponse(CommentBase):
     class Config:
         from_attributes = True
 
+
+class TagResponse(BaseModel):
+
+    name: str
+
+    class Config:
+        from_attributes = True
 
 
 class UserModel(BaseModel):
@@ -56,8 +64,10 @@ class TokenModel(BaseModel):
 class RequestEmail(BaseModel):
     email: EmailStr
 
+
 class TagModel(BaseModel):
     name: str = Field(max_length=25)
+
 
 class TagResponse(TagModel):
     id: int
@@ -77,3 +87,34 @@ class QRCodeModel(BaseModel):
 
 class QRCodeRequest(BaseModel):
     transformed_photo_url: str
+
+
+class PictureBase(BaseModel):
+    public_id: str = ""
+    url: str
+
+
+class PictureResponse(BaseModel):
+
+    id: int
+    public_id: str
+    url: str
+    description: str | None
+
+    class Config:
+        orm_mode = True
+
+
+class PictureResponseDetails(PictureResponse):
+
+    tags: list[TagResponse]
+    comments: list[CommentResponse]
+
+    #     __tablename__ = "pictures"
+    # id = Column(Integer, primary_key=True, autoincrement=True)
+    # public_id = Column(String(255), nullable=True)
+    # url = Column(String(255), nullable=True)
+    # description = Column(String(300), nullable=True)
+    # tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
+    # comments = relationship("Comment", backref="pictures")
+    # is_deleted = Column(Boolean, default=False)

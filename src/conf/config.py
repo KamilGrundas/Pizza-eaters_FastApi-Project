@@ -19,14 +19,6 @@ class Settings(BaseSettings):
     host: str
     port: str
 
-    # mail_username: str
-    # mail_password: str
-    # mail_from: str
-    # mail_port: int
-    # mail_server: str
-    # secret_key: str
-    # algorithm: str
-
     mail_username: str
     mail_password: str
     mail_from: str

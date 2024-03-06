@@ -38,9 +38,13 @@ class Tag(Base):
 class Picture(Base):
     __tablename__ = "pictures"
     id = Column(Integer, primary_key=True, autoincrement=True)
+    public_id = Column(String(255), nullable=True)
+    url = Column(String(255), nullable=True)
+    description = Column(String(300), nullable=True)
     tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
     comments = relationship("Comment", backref="pictures")
-    # wstawiłam tyle tylko, żeby mi lokalnie błędu nie wywalało - Olka
+    is_deleted = Column(Boolean, default=False)
+    # user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE")) - to na potem
 
 
 class Comment(Base):
@@ -51,9 +55,7 @@ class Comment(Base):
     # user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE")) - to na potem
     created_at = Column(DateTime, default=func.now())
     edited_at = Column(DateTime, default=func.now())
-    is_deleted = Column(
-        Boolean, default=False
-    )  # to jest soft delete ;) komentarz po usunięciu będzie w bazie danych ale nie będzie wyświetlany
+    is_deleted = Column(Boolean, default=False)
 
 
 class QRCode(Base):
