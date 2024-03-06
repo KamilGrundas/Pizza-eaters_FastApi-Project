@@ -146,11 +146,11 @@ async def generate_qr_code(qr_code_request: QRCodeRequest, db: Session = Depends
         box_size=10,
         border=2,
     )
-    qr.add_data(qr_code_request.transformed_photo_url)
+    qr.add_data(qr_code_request.transformed_picture_url)
     qr.make(fit=True)
     qr_img = qr.make_image(fill_color="black", back_color="white")
 
-    qr_img_path = f"qr_codes/{qr_code_request.transformed_photo_url.replace('/', '_').replace(':', '_')}.png"
+    qr_img_path = f"qr_codes/{qr_code_request.transformed_picture_url.replace('/', '_').replace(':', '_')}.png"
     qr_img.save(qr_img_path)
 
     # Save QR code URL to the database
