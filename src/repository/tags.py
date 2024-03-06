@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from src.database.models import Tag
+from src.database.models import Tag, Picture
 from src.schemas import TagModel
 
 
@@ -25,7 +25,7 @@ async def create_tag(body: TagModel, db: Session) -> Tag:
 async def update_tag(tag_id: int, body: TagModel, db: Session) -> Tag | None:
     tag = db.query(Tag).filter(Tag.id == tag_id).first()
     if tag:
-        tag .name = body.name
+        tag.name = body.name
         db.commit()
     return tag
 
@@ -36,3 +36,8 @@ async def remove_tag(tag_id: int, db: Session)  -> Tag | None:
         db.delete(tag)
         db.commit()
     return tag
+
+
+async def get_picture_tags(picture_id: int, db: Session) -> List[Tag]:
+    tags = db.query(Picture).filter(Picture.id == picture_id).first().tags
+    return tags
