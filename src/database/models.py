@@ -14,6 +14,7 @@ picture_m2m_tag = Table(
     Column("tag_id", Integer, ForeignKey("tags.id", ondelete="CASCADE")),
 )
 
+
 class User(Base):
     __tablename__ = "users"
     id = Column(Integer, primary_key=True)
@@ -22,17 +23,15 @@ class User(Base):
     password = Column(String(255), nullable=False)
     created_at = Column("crated_at", DateTime, default=func.now())
     confirmed = Column(Boolean, default=False)
-    # role = Column()
-    admin = Column(Boolean, default=False)
-    mod = Column(Boolean, default=False)
-    standard_user = Column(Boolean, default=False)
+    role = Column(String(255), nullable=False)
+    # pictures = relationship("Picture", back_populates="user") to be uncommented
+    # comments = relationship("Comment", back_populates="user") to be uncommented
 
 
 class Tag(Base):
     __tablename__ = "tags"
     id = Column(Integer, primary_key=True)
     name = Column(String(25), nullable=False, unique=True)
-    
     
 
 class Picture(Base):
