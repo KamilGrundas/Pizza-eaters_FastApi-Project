@@ -65,8 +65,10 @@ class RequestEmail(BaseModel):
     email: EmailStr
 
 
+
 class TagModel(BaseModel):
     name: str = Field(max_length=25)
+
 
 
 class TagResponse(TagModel):
@@ -79,10 +81,10 @@ class TagResponse(TagModel):
 class QRCodeModel(BaseModel):
     id: int
     url: str
-    transformed_photo_url: str
+    transformed_picture_url: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class QRCodeRequest(BaseModel):

@@ -47,6 +47,13 @@ class Picture(Base):
     # user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE")) - to na potem
 
 
+class TransformedPicture(Base):
+    __tablename__ = "transformed_pictures"
+    id = Column(Integer, primary_key=True, index=True)
+    url = Column(String)
+    picture_id = Column(Integer, ForeignKey("pictures.id"))
+
+
 class Comment(Base):
     __tablename__ = "comments"
     id = Column(Integer, primary_key=True, autoincrement=True)
@@ -63,4 +70,5 @@ class QRCode(Base):
 
     id = Column(Integer, primary_key=True, index=True)
     url = Column(String)
-    transformed_photo_url = Column(String)
+    transformed_picture_id = Column(Integer, ForeignKey("transformed_pictures.id", ondelete='CASCADE'))
+
