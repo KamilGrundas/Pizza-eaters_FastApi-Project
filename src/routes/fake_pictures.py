@@ -84,12 +84,12 @@ def apply_effect(file, public_id, effect):
         return {"error": f"Error while applying effect: {e}"}
 
 
-@router.get("/get_image/{public_id}")
-async def get_image(public_id: str):
-    return get_image_url(public_id)
+@router.get("/get_picture/{public_id}")
+async def get_picture(public_id: str):
+    return get_picture_url(public_id)
 
 
-def get_all_image_urls():
+def get_all_pictures_urls():
     try:
         result = cloudinary.api.resources(type="upload")
         images = result.get("resources", [])
@@ -98,39 +98,39 @@ def get_all_image_urls():
         return {"error": f"Error while getting image URLs: {e}"}
 
 
-@router.get("/get_all_images/")
-async def get_images():
-    return get_all_image_urls()
+@router.get("/get_all_pictures/")
+async def get_pictures():
+    return get_all_pictures_urls()
 
 
 @router.put("/edit_picture/sepia/{public_id}")
-async def edit_image_sepia(public_id: str, file: UploadFile = File(...)):
+async def edit_picture_sepia(public_id: str, file: UploadFile = File(...)):
     return apply_effect(file.file, public_id, "sepia")
 
 
 @router.put("/edit_picture/grayscale/{public_id}")
-async def edit_image_grayscale(public_id: str, file: UploadFile = File(...)):
+async def edit_picture_grayscale(public_id: str, file: UploadFile = File(...)):
     return apply_effect(file.file, public_id, "blackwhite")
 
 
 @router.put("/edit_picture/negative/{public_id}")
-async def edit_image_negative(public_id: str, file: UploadFile = File(...)):
+async def edit_picture_negative(public_id: str, file: UploadFile = File(...)):
     return apply_effect(file.file, public_id, "negate")
 
 
 @router.put("/edit_picture/resize/{public_id}")
-async def edit_image_resize(public_id: str, file: UploadFile = File(...), width: int = 100, height: int = 100):
+async def edit_picture_resize(public_id: str, file: UploadFile = File(...), width: int = 100, height: int = 100):
     transformation = {"width": width, "height": height, "crop": "fill"}
     return apply_effect(file.file, public_id, transformation)
 
 
 @router.put("/edit_picture/rotate/{public_id}")
-async def edit_image_rotate(public_id: str, file: UploadFile = File(...), angle: int = 90):
+async def edit_picture_rotate(public_id: str, file: UploadFile = File(...), angle: int = 90):
     transformation = {"angle": angle}
     return apply_effect(file.file, public_id, transformation)
 
 
-def get_image_url(public_id):
+def get_picture_url(public_id):
     try:
         return {"image_url": f"https://res.cloudinary.com/{cloud_name}/image/upload/{public_id}"}
     except Exception as e:
