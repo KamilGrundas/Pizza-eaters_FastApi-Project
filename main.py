@@ -5,10 +5,10 @@ from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
 from src.database.db import get_db
 from fastapi import Depends
-from src.routes import auth, fake_pictures, tags
+from src.routes import auth, fake_pictures, tags, comments
 from sqlalchemy.orm import Session
-from fastapi import FastAPI, File, UploadFile
-
+from fastapi import FastAPI, File, UploadFile, status
+from src.schemas import CommentBase
 
 app = FastAPI()
 
@@ -17,6 +17,7 @@ app = FastAPI()
 app.include_router(auth.router, prefix='/api')
 app.include_router(fake_pictures.router, prefix="/wizards")
 app.include_router(tags.router, prefix='/wizards')
+app.include_router(comments.router, prefix='/wizards')
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
@@ -34,13 +35,13 @@ async def get_home(request: Request):
     context = {"pictures": pictures}
     return templates.TemplateResponse("index.html", {"request": request, "context": context})
 
-@app.post("/picture-detail/")
-@app.get("/picture-detail/", response_class=HTMLResponse)
-async def get_home(request: Request):
+@app.post("/picture-detail/{picture_id}", status_code=status.HTTP_201_CREATED)
+@app.get("/picture-detail/{picture_id}", response_class=HTMLResponse)
+async def get_picture(request: Request, picture_id: int, db: Session = Depends(get_db)):
     pictures = fake_pictures.get_all_image_urls()
     context = {"pictures": pictures}
     if request.method == "POST":
-        print("elo")
+        await comments.add_new_comment(picture_id,"alo",db)
     return templates.TemplateResponse("picture.html", {"request": request, "context": context})
 
 if __name__ == "__main__":
