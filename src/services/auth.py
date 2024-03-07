@@ -22,6 +22,8 @@ pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 class User(BaseModel):
     username: str
     role: str
+    is_active: bool
+    is_banned: bool
 
 
 class UserRoleEnum(str, Enum):
@@ -141,9 +143,10 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         role: str = payload.get("role")
-        if username is None or role is None:
+        is_active: bool = payload.get("is_active")
+        if username is None or role is None or is_active is None:
             raise credentials_exception
-        return User(username=username, role=role)
+        return User(username=username, role=role, is_active=is_active)
     except JWTError:
         raise credentials_exception
 
@@ -151,6 +154,8 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
 def get_current_active_user(current_user: User = Depends(get_current_user)):
     if current_user is None:
         raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
+    if current_user.is_banned:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User '{username}' is not allowed")
     return current_user
 
 

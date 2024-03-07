@@ -58,6 +58,8 @@ class UserModel(BaseModel):
     username: str = Field(min_length=5, max_length=16)
     email: str
     password: str = Field(min_length=8, max_length=16)
+    is_active: bool = True
+    is_banned: bool = False
 
 
 class UserDb(BaseModel):
