@@ -9,6 +9,7 @@ from src.database.models import User, Comment, Picture
 import src.repository.comments as comments_repo
 
 from src.services.exceptions_func import no_comment_exception, no_picture_exception
+import src.services.auth as auth_service
 
 
 router = APIRouter(
@@ -18,7 +19,10 @@ router = APIRouter(
 
 @router.post("/", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
 async def add_new_comment(
-    picture_id: int, body: CommentBase, db: Session = Depends(get_db)
+    picture_id: int,
+    body: CommentBase,
+    db: Session = Depends(get_db),
+    user: User = Depends(auth_service.get_current_active_user),
 ) -> Comment:
     # to docelowo może zrobić każdy zalogowany użytkownik ale na razie każdy
     no_picture_exception(picture_id, db)

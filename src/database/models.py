@@ -43,7 +43,7 @@ class Picture(Base):
     tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
     comments = relationship("Comment", backref="pictures")
     is_deleted = Column(Boolean, default=False)
-    # user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE")) - to na potem
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
 
 
 class TransformedPicture(Base):
@@ -61,7 +61,7 @@ class Comment(Base):
     )
     picture_comment_id = Column(Integer, primary_key=True)
     text = Column(String(200), nullable=False)
-    # user_id = Column(Integer, ForeignKey("users.id", ondelete="CASCADE")) - to na potem
+    user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
     created_at = Column(DateTime, default=func.now())
     edited_at = Column(DateTime, default=func.now())
     is_deleted = Column(Boolean, default=False)
