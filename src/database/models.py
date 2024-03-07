@@ -82,3 +82,4 @@ class QRCode(Base):
     transformed_picture_id = Column(
         Integer, ForeignKey("transformed_pictures.id", ondelete="CASCADE")
     )
+

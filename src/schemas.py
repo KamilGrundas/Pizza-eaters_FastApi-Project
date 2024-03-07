@@ -143,3 +143,4 @@ class PictureResponseDetails(PictureResponse):
     # tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
     # comments = relationship("Comment", backref="pictures")
     # is_deleted = Column(Boolean, default=False)
+
