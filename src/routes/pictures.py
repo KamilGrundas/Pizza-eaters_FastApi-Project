@@ -1,4 +1,4 @@
-from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status
+from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status, Query
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
@@ -8,7 +8,12 @@ from src.database.models import Picture, QRCode
 
 import qrcode
 from src.routes import comments
-from src.schemas import QRCodeRequest, PictureResponse, PictureResponseDetails
+from src.schemas import (
+    QRCodeRequest,
+    PictureResponse,
+    PictureResponseDetails,
+    Comment2Display,
+)
 
 from src.conf.config import settings
 
@@ -32,103 +37,27 @@ router.include_router(comments.router)
 
 
 @router.post("/upload_picture/", response_model=PictureResponse)
-async def upload_file(
-    description: str = None,
+async def upload_image_mod(
     file: UploadFile = File(...),
+    color_mod: str | None = Query(
+        default=None, description="e.g.: sepia, blackwhite, negate"
+    ),
+    width: int | None = None,
+    height: int | None = None,
+    angle: int | None = None,
+    description: str = None,
     public_id: str = None,
     db: Session = Depends(get_db),
 ) -> PictureResponse:
-    cloudinary_result = await pictures_service.upload_file(file, public_id)
-    database_result = await pictures_repo.copy_picture_from_cloudinary_to_database(
-        cloudinary_result, description, db
+    transformation = pictures_service.make_transformation(
+        color_mod=color_mod, width=width, height=height, angle=angle
     )
-    return database_result
-
-
-@router.post("/upload_picture/sepia/", response_model=PictureResponse)
-async def upload_image_sepia(
-    description: str = None,
-    file: UploadFile = File(...),
-    public_id: str = None,
-    db: Session = Depends(get_db),
-) -> PictureResponse:
-    cloudinary_result = await pictures_service.apply_effect(
-        file.file, public_id, "sepia"
-    )
-    database_result = await pictures_repo.copy_picture_from_cloudinary_to_database(
-        cloudinary_result, description, db
-    )
-    return database_result
-
-
-@router.post("/upload_picture/grayscale/", response_model=PictureResponse)
-async def upload_image_sepia(
-    description: str = None,
-    file: UploadFile = File(...),
-    public_id: str = None,
-    db: Session = Depends(get_db),
-) -> PictureResponse:
-    cloudinary_result = await pictures_service.apply_effect(
-        file.file, public_id, "blackwhite"
-    )
-    database_result = await pictures_repo.copy_picture_from_cloudinary_to_database(
-        cloudinary_result, description, db
-    )
-    return database_result
-
-
-@router.post("/upload_picture/negative/", response_model=PictureResponse)
-async def upload_image_negative(
-    description: str = None,
-    file: UploadFile = File(...),
-    public_id: str = None,
-    db: Session = Depends(get_db),
-) -> PictureResponse:
-    cloudinary_result = await pictures_service.apply_effect(
-        file.file, public_id, "negate"
-    )
-    database_result = await pictures_repo.copy_picture_from_cloudinary_to_database(
-        cloudinary_result, description, db
-    )
-    return database_result
-
-
-@router.post("/upload_picture/resize/")
-async def upload_image_resize(
-    description: str = None,
-    file: UploadFile = File(...),
-    public_id: str = None,
-    width: int = 100,
-    height: int = 100,
-    db: Session = Depends(get_db),
-):
-    transformation = {"width": width, "height": height, "crop": "fill"}
-    cloudinary_result = await pictures_service.apply_effect(
+    cloudinary_result = await pictures_service.apply_effects(
         file.file, public_id, transformation
     )
     database_result = await pictures_repo.copy_picture_from_cloudinary_to_database(
         cloudinary_result, description, db
     )
-    print(database_result)
-    return database_result
-
-
-@router.post("/upload_picture/rotate/")
-async def upload_image_rotate(
-    description: str = None,
-    file: UploadFile = File(...),
-    public_id: str = None,
-    angle: int = 90,
-    db: Session = Depends(get_db),
-):
-    transformation = {"angle": angle}
-    cloudinary_result = await pictures_service.apply_effect(
-        file.file, public_id, transformation
-    )
-    database_result = await pictures_repo.copy_picture_from_cloudinary_to_database(
-        cloudinary_result, description, db
-    )
-    print(database_result)
     return database_result
 
 
@@ -151,40 +80,33 @@ async def picture_details(picture_id: int, db: Session = Depends(get_db)):
 async def display_pictures(db: Session = Depends(get_db)):
     result = db.query(Picture).all()
 
-    list_of_pictures_id = []
-    for item in result:
-        list_of_pictures_id.append(item.id)
-
     return result
 
 
-@router.delete("/{picture_id}")
+@router.delete("/{picture_id}", response_model=PictureResponse)
 async def delete_file(picture_id: int, db: Session = Depends(get_db)):
 
     no_picture_exception(picture_id=picture_id, db=db)
-    public_id = pictures_repo.get_picture(picture_id=picture_id, db=db).public_id
+    picture = await pictures_repo.get_picture(picture_id=picture_id, db=db)
+    public_id = picture.public_id
     cloudinary_result = await pictures_service.delete_file(public_id)
     database_result = await pictures_repo.delete_picture(picture_id=picture_id, db=db)
 
     return database_result
 
 
-@router.put("/{picture_id}")  # to zmieniam
-async def edit_description(picture_id: int, db: Session = Depends(get_db)):
+@router.put("/{picture_id}", response_model=PictureResponse)
+async def edit_description(
+    picture_id: int,
+    new_description: str,
+    db: Session = Depends(get_db),
+):
 
     no_picture_exception(picture_id=picture_id, db=db)
-    public_id = pictures_repo.get_picture(picture_id=picture_id, db=db).public_id
-    cloudinary_result = await pictures_service.delete_file(public_id)
-    database_result = await pictures_repo.delete_picture(picture_id=picture_id, db=db)
+    database_result = await pictures_repo.edit_picture_description(
+        picture_id=picture_id, db=db, new_description=new_description
+    )
 
-    return database_result
-
-
-@router.put("/{picture_id}/add_tag")  # to zmieniam
-async def edit_description(picture_id: int, db: Session = Depends(get_db)):
-
-    no_picture_exception(picture_id=picture_id, db=db)
-    database_result = await pictures_repo.add_tag(picture_id, db)
     return database_result
 
 

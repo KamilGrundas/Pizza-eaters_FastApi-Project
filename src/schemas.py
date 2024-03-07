@@ -16,14 +16,34 @@ class CommentBase(BaseModel):
     text: str = Field(max_length=200)
 
 
-class CommentResponse(CommentBase):
+class Id(BaseModel):
 
     id: int
+
+    class Config:
+        from_attributes = True
+
+
+class CommentDates(BaseModel):
+
     created_at: datetime
     edited_at: datetime
 
     class Config:
         from_attributes = True
+
+
+class CommentResponse(CommentBase, CommentDates):
+
+    picture_id: int
+    picture_comment_id: int
+
+    pass
+
+
+class Comment2Display(CommentBase, CommentDates):
+
+    pass
 
 
 class TagResponse(BaseModel):
@@ -96,21 +116,17 @@ class PictureBase(BaseModel):
     url: str
 
 
-class PictureResponse(BaseModel):
+class PictureResponse(Id):
 
-    id: int
     public_id: str
     url: str
     description: str | None
-
-    class Config:
-        orm_mode = True
 
 
 class PictureResponseDetails(PictureResponse):
 
     tags: list[TagResponse]
-    comments: list[CommentResponse]
+    comments: list[Comment2Display]
 
     #     __tablename__ = "pictures"
     # id = Column(Integer, primary_key=True, autoincrement=True)
