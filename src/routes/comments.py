@@ -16,16 +16,6 @@ router = APIRouter(
 )  # ??? do komentarzy chyba trzeba uderzać z poziomu zdjęcia picture/{picture_id}/
 
 
-@router.get("/", response_model=List[CommentResponse])
-async def display_all_comments(
-    picture_id: int, db: Session = Depends(get_db)
-) -> List[Comment]:
-    # to może zrobić każdy
-    no_picture_exception(picture_id, db)
-    comments = await comments_repo.get_comments(db, picture_id)
-    return comments
-
-
 @router.post("/", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
 async def add_new_comment(
     picture_id: int, body: CommentBase, db: Session = Depends(get_db)
@@ -36,32 +26,51 @@ async def add_new_comment(
     return new_comment
 
 
-@router.get("/{comment_id}", response_model=CommentResponse)
-async def display_comment(comment_id: int, db: Session = Depends(get_db)):
-    no_comment_exception(comment_id, db)
-    comment = await comments_repo.get_comment(db, comment_id)
+@router.get("/", response_model=List[CommentResponse])
+async def get_comments(picture_id: int, db: Session = Depends(get_db)) -> List[Comment]:
+    # to może zrobić każdy
+    no_picture_exception(picture_id, db)
+    comments = await comments_repo.get_comments(db, picture_id)
+    return comments
+
+
+@router.get("/{picture_comment_id}", response_model=CommentResponse)
+async def get_comment(
+    picture_id: int, picture_comment_id: int, db: Session = Depends(get_db)
+):
+    no_comment_exception(picture_id, picture_comment_id, db)
+    comment = await comments_repo.get_comment(db, picture_id, picture_comment_id)
     return comment
 
 
 @router.put(
-    "/{comment_id}",
+    "/{picture_comment_id}",
     response_model=CommentResponse,
 )
 async def edit_comment(
-    comment_id: int, body: CommentBase, db: Session = Depends(get_db)
+    picture_id: int,
+    picture_comment_id: int,
+    body: CommentBase,
+    db: Session = Depends(get_db),
 ) -> Comment:
-    no_comment_exception(comment_id, db)
-    updated_comment = await comments_repo.edit_comment(body, db, comment_id)
+    no_comment_exception(picture_id, picture_comment_id, db)
+    updated_comment = await comments_repo.edit_comment(
+        body, db, picture_id, picture_comment_id
+    )
     return updated_comment
 
 
 @router.delete(
-    "/{comment_id}",
+    "/{picture_comment_id}",
     response_model=CommentResponse,
 )
-async def delete_comment(comment_id: int, db: Session = Depends(get_db)) -> Comment:
-    no_comment_exception(comment_id, db)
-    deleted_comment = await comments_repo.delete_comment(db, comment_id)
+async def delete_comment(
+    picture_id: int, picture_comment_id: int, db: Session = Depends(get_db)
+) -> Comment:
+    no_comment_exception(picture_id, picture_comment_id, db)
+    deleted_comment = await comments_repo.delete_comment(
+        db, picture_id, picture_comment_id
+    )
     return deleted_comment
 
 

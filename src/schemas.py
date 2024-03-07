@@ -33,7 +33,10 @@ class CommentDates(BaseModel):
         from_attributes = True
 
 
-class CommentResponse(Id, CommentBase, CommentDates):
+class CommentResponse(CommentBase, CommentDates):
+
+    picture_id: int
+    picture_comment_id: int
 
     pass
 
