@@ -165,7 +165,7 @@ def is_administrator(current_user: User = Depends(get_current_user)):
 
 
 def is_moderator(current_user: User = Depends(get_current_user)):
-    if current_user.role not in [UserRoleEnum.ADMIN, User.MOD]:
+    if current_user.role not in [UserRoleEnum.ADMIN, UserRoleEnum.MOD]:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!")
 
 

@@ -3,11 +3,11 @@ from typing import List
 from sqlalchemy.orm import Session
 
 from src.schemas import CommentBase
-from src.database.models import Comment, Picture
+from src.database.models import Comment, User
 
 
 async def create_new_comment(
-    body: CommentBase, db: Session, picture_id: int
+    body: CommentBase, db: Session, picture_id: int, author: User
 ) -> Comment:
     # docelowo będzie tu jeszcze User
     picture_comments_num = (
@@ -20,6 +20,7 @@ async def create_new_comment(
         picture_id=picture_id,
         picture_comment_id=picture_comments_num + 1,
         text=body.text,
+        user_id=author.id,
     )
     db.add(comment)
     db.commit()

@@ -12,7 +12,7 @@ limiting = RateLimiter(times=8, seconds=60)
 
 
 @router.get("/profile/{username}", response_model=UserDb)
-@limiting.limit("8 per 60 seconds")
+# @limiting.limit("8 per 60 seconds")
 async def get_user_profile(username: str, current_user: auth.User = Depends(auth.get_current_active_user),
                            db: Session = Depends(get_db)):
     if current_user.username != username:
@@ -25,7 +25,7 @@ async def get_user_profile(username: str, current_user: auth.User = Depends(auth
 
 
 @router.get("/profile", response_model=UserDb)
-@limiting.limit("8 per 60 seconds")
+# @limiting.limit("8 per 60 seconds")
 async def get_own_profile(current_user: auth.User = Depends(auth.get_current_active_user), db: Session = Depends(get_db)):
     user = await get_user_by_username(db, current_user.username)
     if user is None:
@@ -34,7 +34,7 @@ async def get_own_profile(current_user: auth.User = Depends(auth.get_current_act
 
 
 @router.put("/profile", response_model=UserDb)
-@limiting.limit("8 per 60 seconds")
+# @limiting.limit("8 per 60 seconds")
 async def update_own_profile(
     user_info: UserModel,
     current_user: auth.User = Depends(auth.get_current_active_user),
