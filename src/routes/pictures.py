@@ -8,7 +8,7 @@ from src.database.models import Picture, QRCode
 
 import qrcode
 from src.routes import comments
-from src.schemas import QRCodeRequest, PictureResponse, PictureResponseDetails
+from src.schemas import QRCodeRequest, PictureResponse, PictureResponseDetails, Comment2Display
 
 from src.conf.config import settings
 
