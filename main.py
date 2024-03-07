@@ -7,15 +7,26 @@ from src.schemas import CommentBase, CommentResponse
 from src.repository import pictures as pictures_repo
 from src.database.db import get_db
 from src.schemas import PictureResponse
-
 from fastapi import Depends, status
-
 from src.routes import auth, tags, comments
 from src.routes import pictures as pict
-
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, File, UploadFile, Form
+from dotenv import load_dotenv
+import os
 
+load_dotenv()
+cloud_name = os.getenv("CLOUD_NAME")
+api_key = os.getenv("API_KEY")
+api_secret = os.getenv("API_SECRET")
+sqlalchemy_database_url = os.getenv("SQLALCHEMY_DATABASE_URL")
+mail_username = os.getenv("MAIL_USERNAME")
+mail_password = os.getenv("MAIL_PASSWORD")
+mail_from = os.getenv("MAIL_FROM")
+mail_port = os.getenv("MAIL_PORT")
+mail_server = os.getenv("MAIL_SERVER")
+secret_key = os.getenv("SECRET_KEY")
+algorithm = os.getenv("ALGORITHM")
 
 app = FastAPI()
 

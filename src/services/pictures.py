@@ -1,6 +1,16 @@
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+from src.conf.config import  settings
+cloud_name = settings.cloud_name
+api_key = settings.api_key
+api_secret = settings.api_secret
+
+cloudinary.config(
+    cloud_name=cloud_name,
+    api_key=api_key,
+    api_secret=api_secret
+)
 
 
 def get_url_and_public_id(upload_result: dict) -> dict:
