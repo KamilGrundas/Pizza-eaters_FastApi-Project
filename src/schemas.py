@@ -1,4 +1,5 @@
 from pydantic import BaseModel, Field, EmailStr
+from typing import List
 from datetime import datetime
 
 
@@ -15,11 +16,39 @@ class CommentBase(BaseModel):
     text: str = Field(max_length=200)
 
 
-class CommentResponse(CommentBase):
+class Id(BaseModel):
 
     id: int
+
+    class Config:
+        from_attributes = True
+
+
+class CommentDates(BaseModel):
+
     created_at: datetime
     edited_at: datetime
+
+    class Config:
+        from_attributes = True
+
+
+class CommentResponse(CommentBase, CommentDates):
+
+    picture_id: int
+    picture_comment_id: int
+
+    pass
+
+
+class Comment2Display(CommentBase, CommentDates):
+
+    pass
+
+
+class TagResponse(BaseModel):
+
+    name: str
 
     class Config:
         from_attributes = True
@@ -57,8 +86,12 @@ class TokenModel(BaseModel):
 class RequestEmail(BaseModel):
     email: EmailStr
 
+
+
 class TagModel(BaseModel):
     name: str = Field(max_length=25)
+
+
 
 class TagResponse(TagModel):
     id: int
@@ -70,11 +103,38 @@ class TagResponse(TagModel):
 class QRCodeModel(BaseModel):
     id: int
     url: str
-    transformed_photo_url: str
+    transformed_picture_url: int
 
     class Config:
-        orm_mode = True
+        from_attributes = True
 
 
 class QRCodeRequest(BaseModel):
     transformed_photo_url: str
+
+
+class PictureBase(BaseModel):
+    public_id: str = ""
+    url: str
+
+
+class PictureResponse(Id):
+
+    public_id: str
+    url: str
+    description: str | None
+
+
+class PictureResponseDetails(PictureResponse):
+
+    tags: list[TagResponse]
+    comments: list[Comment2Display]
+
+    #     __tablename__ = "pictures"
+    # id = Column(Integer, primary_key=True, autoincrement=True)
+    # public_id = Column(String(255), nullable=True)
+    # url = Column(String(255), nullable=True)
+    # description = Column(String(300), nullable=True)
+    # tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
+    # comments = relationship("Comment", backref="pictures")
+    # is_deleted = Column(Boolean, default=False)

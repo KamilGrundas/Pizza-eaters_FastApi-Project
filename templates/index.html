@@ -6,7 +6,7 @@
 	{% for picture in context["pictures"] %}
 
     <div class="image-box">
-        <img src="{{ picture }}" alt="">
+        <a href="picture-detail/{{picture.id}}"><img src="{{ picture.url }}" alt=""></a>
         <div>{{description}}</div>
     </div>
 

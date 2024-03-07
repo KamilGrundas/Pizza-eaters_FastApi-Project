@@ -25,6 +25,7 @@ class Settings(BaseSettings):
     class Config:
         env_file = ".env"
         env_file_encoding = "utf-8"
+        extra = "ignore"  # to powoduje że nie wywali się gdy jakieś zmienne nie zostaną wykorzystane
 
 
 settings = Settings()
