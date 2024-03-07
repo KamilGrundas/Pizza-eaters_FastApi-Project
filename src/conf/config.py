@@ -14,11 +14,6 @@ class Settings(BaseSettings):
     api_key: str
     api_secret: str
 
-    sqlalchemy_database_url: str
-
-    host: str
-    port: str
-
     mail_username: str
     mail_password: str
     mail_from: str
