@@ -155,12 +155,15 @@ def is_administrator(current_user: User = Depends(get_current_user)):
 
 
 def is_moderator(current_user: User = Depends(get_current_user)):
+
     allowed_roles = {UserRoleEnum.ADMIN, UserRoleEnum.MOD}
 
     if current_user.role in allowed_roles:
         return current_user
     else:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied!")
+
+ 
 
 
 def is_user(current_user: User = Depends(get_current_user)):

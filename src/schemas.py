@@ -119,7 +119,7 @@ class QRCodeRequest(BaseModel):
 
 
 class PictureBase(BaseModel):
-    public_id: str = ""
+    public_id: str | None
     url: str
 
 
