@@ -36,6 +36,7 @@ async def signup(
 ):
 
     exist_user = await repository_users.get_user_by_email(body.email, db)
+    print("po exist_user")
     if exist_user:
 
         raise HTTPException(

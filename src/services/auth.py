@@ -3,8 +3,8 @@ from fastapi.security import OAuth2PasswordBearer
 from jose import JWTError, jwt
 from datetime import datetime, timedelta
 from passlib.context import CryptContext
-from pydantic import BaseModel
-from enum import Enum
+from src.database.models import User
+from src.schemas import UserRoleEnum
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 from src.conf.config import settings
@@ -17,19 +17,6 @@ REFRESH_TOKEN_EXPIRE_DAYS = 7
 
 oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
-
-
-class User(BaseModel):
-    username: str
-    role: str
-    is_active: bool
-    is_banned: bool
-
-
-class UserRoleEnum(str, Enum):
-    ADMIN = "admin"
-    MOD = "moderator"
-    STANDARD_USER = "standard_user"
 
 
 # Password operations
@@ -147,10 +134,11 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
         role: str = payload.get("role")
-        is_active: bool = payload.get("is_active")
-        if username is None or role is None or is_active is None:
+        if username is None or role is None:
             raise credentials_exception
-        return User(username=username, role=role, is_active=is_active)
+        return User(
+            username=username, role=role
+        )  # funkcja powinna zwrócić użytkownika z bazy danych, nie tworzyć nowego
     except JWTError:
         raise credentials_exception
 
@@ -173,6 +161,14 @@ def is_administrator(current_user: User = Depends(get_current_user)):
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!"
         )
+    allowed_roles = {UserRoleEnum.ADMIN}
+
+    if current_user.role in allowed_roles:
+        return current_user
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied!"
+        )
 
 
 def is_moderator(current_user: User = Depends(get_current_user)):
@@ -181,12 +177,18 @@ def is_moderator(current_user: User = Depends(get_current_user)):
             status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!"
         )
 
+    allowed_roles = {UserRoleEnum.ADMIN, UserRoleEnum.MOD}
+
+    if current_user.role in allowed_roles:
+        return current_user
+    else:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied!"
+        )
+
 
 def is_standard_user(current_user: User = Depends(get_current_user)):
     if current_user.role != UserRoleEnum.STANDARD_USER:
         raise HTTPException(
             status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!"
         )
-
-
-

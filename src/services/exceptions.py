@@ -2,7 +2,7 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from src.database.models import Comment, Picture, UserDependence, User
+from src.database.models import Comment, Picture, User
 
 
 from fastapi import HTTPException, status
@@ -59,6 +59,3 @@ def raise_404_exception_if_one_should(source, source_name=""):
 def check_if_user_is_author(source, current_user: User):
     if source.user_id != current_user.id:
         raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
-
-
-    

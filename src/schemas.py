@@ -1,3 +1,5 @@
+from enum import Enum
+
 from pydantic import BaseModel, Field, EmailStr
 from typing import List
 from datetime import datetime
@@ -58,7 +60,6 @@ class UserModel(BaseModel):
     username: str = Field(min_length=5, max_length=16)
     email: str
     password: str = Field(min_length=8, max_length=16)
-    is_active: bool = True
     is_banned: bool = False
 
 
@@ -77,6 +78,12 @@ class UserResponse(BaseModel):
     detail: str = "User successfully created"
 
 
+class UserRoleEnum(str, Enum):
+    ADMIN = "administrator"
+    MOD = "moderator"
+    USER = "user"
+
+
 class TokenModel(BaseModel):
     access_token: str
     refresh_token: str
@@ -87,10 +94,8 @@ class RequestEmail(BaseModel):
     email: EmailStr
 
 
-
 class TagModel(BaseModel):
     name: str = Field(max_length=25)
-
 
 
 class TagResponse(TagModel):
@@ -138,3 +143,4 @@ class PictureResponseDetails(PictureResponse):
     # tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
     # comments = relationship("Comment", backref="pictures")
     # is_deleted = Column(Boolean, default=False)
+

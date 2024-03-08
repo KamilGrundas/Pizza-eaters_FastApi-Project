@@ -28,11 +28,7 @@ async def add_new_comment(
     db: Session = Depends(get_db),
     user: User = Depends(current_user),
 ) -> Comment:
-    new_comment = await comments_repo.add_comment(body, 
-                                                  db, 
-                                                  picture_id, 
-                                                  user
-                                                  )
+    new_comment = await comments_repo.add_comment(body, db, picture_id, user)
     return new_comment
 
 
@@ -62,7 +58,7 @@ async def edit_comment(
     picture_comment_id: int,
     body: CommentBase,
     db: Session = Depends(get_db),
-    user: User = Depends(current_user)
+    user: User = Depends(current_user),
 ) -> Comment:
     updated_comment = await comments_repo.edit_comment(
         body, db, picture_id, picture_comment_id
@@ -76,10 +72,10 @@ async def edit_comment(
     response_model=CommentResponse,
 )
 async def delete_comment(
-    picture_id: int, 
-    picture_comment_id: int, 
+    picture_id: int,
+    picture_comment_id: int,
     db: Session = Depends(get_db),
-    user: User = Depends(auth_service.admin)
+    # user: User = Depends(auth_service.admin)
 ) -> Comment:
     deleted_comment = await comments_repo.delete_comment(
         db, picture_id, picture_comment_id
