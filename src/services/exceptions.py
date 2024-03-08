@@ -2,11 +2,15 @@ from typing import List
 
 from sqlalchemy.orm import Session
 
-from src.database.models import Comment, Picture, User
+from src.database.models import Comment, Picture, User, Tag
 
 
 from fastapi import HTTPException, status
 
+PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED = -1
+TAG_IS_ALREADY_ASSIGNED_TO_PICTURE = -2
+TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED = -3
+TAG_IS_NOT_ASSIGNED_TO_PICTURE = -4
 
 async def check_if_picture_exists(picture_id: int, db: Session):
 
@@ -20,6 +24,14 @@ async def check_if_picture_exists(picture_id: int, db: Session):
     if picture.is_deleted:
         raise exc
 
+def check_if_tag_exists(tag_id: int, db: Session):
+
+    exc = HTTPException(
+        status_code=status.HTTP_404_NOT_FOUND, detail="Tag not found"
+    )
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+    if bool(tag) == False:
+        raise exc
 
 async def check_if_comment_exists(
     picture_id: int, picture_comment_id: int, db: Session
