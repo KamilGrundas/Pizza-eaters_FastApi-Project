@@ -1,9 +1,20 @@
-from typing import List
+from typing import List, Dict
 
 from sqlalchemy.orm import Session
 
-from src.database.models import Picture
+from src.schemas import CommentBase, PictureBase
+from src.database.models import Comment, Picture, Tag, picture_m2m_tag
+from src.schemas import PictureResponse, PictureResponseDetails
 
+from fastapi import Depends
+from src.database.db import get_db
+
+
+from fastapi import Depends, HTTPException, status
+from src.services.exceptions_func import (TAG_IS_ALREADY_ASSIGNED_TO_PICTURE,
+                                          PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
+                                          TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
+                                          )
 
 
 async def add_picture(
@@ -14,6 +25,23 @@ async def add_picture(
     db.commit()
     db.refresh(new_picture)
     return new_picture
+
+async def add_tag(picture_id: int, tag_id: int, db: Session):
+    picture = db.query(Picture).filter( Picture.id == picture_id ).first()
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+
+    if (len(picture.tags)>=5) and (tag in picture.tags):
+        return TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED
+
+    if len(picture.tags)>=5:
+        return PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED
+
+    if tag in picture.tags:
+        return TAG_IS_ALREADY_ASSIGNED_TO_PICTURE
+
+    picture.tags.append(tag)
+    db.commit()
+    return 0
 
 
 async def get_pictures(db: Session) -> List[Picture]:
