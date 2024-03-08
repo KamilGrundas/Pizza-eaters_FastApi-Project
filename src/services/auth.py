@@ -36,6 +36,7 @@ def password_update(user: User, password: str, db: Session) -> None:
 
     db.commit()
 
+
 # Token operations
 
 
@@ -77,9 +78,12 @@ def create_refresh_token(data: dict, expires_delta: timedelta = None):
         expire = datetime.utcnow() + expires_delta
     else:
         expire = datetime.utcnow() + timedelta(days=REFRESH_TOKEN_EXPIRE_DAYS)
-    to_encode.update({"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"})
+    to_encode.update(
+        {"iat": datetime.utcnow(), "exp": expire, "scope": "refresh_token"}
+    )
     refresh_token = jwt.encode(to_encode, SECRET_KEY, algorithm=ALGORITHM)
     return refresh_token
+
 
 # Auth functions
 
@@ -116,7 +120,7 @@ def get_email_from_token(token: str) -> str:
         print(e)
         raise HTTPException(
             status_code=status.HTTP_422_UNPROCESSABLE_ENTITY,
-            detail="Invalid token for email verification"
+            detail="Invalid token for email verification",
         )
 
 
@@ -132,44 +136,59 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
         role: str = payload.get("role")
         if username is None or role is None:
             raise credentials_exception
-        return User(username=username, role=role)
+        return User(
+            username=username, role=role
+        )  # funkcja powinna zwrócić użytkownika z bazy danych, nie tworzyć nowego
     except JWTError:
         raise credentials_exception
 
 
 def get_current_active_user(current_user: User = Depends(get_current_user)):
     if current_user is None:
-        raise HTTPException(status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user")
+        raise HTTPException(
+            status_code=status.HTTP_400_BAD_REQUEST, detail="Inactive user"
+        )
     if current_user.is_banned:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User '{username}' is not allowed")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="User '{username}' is not allowed",
+        )
     return current_user
 
 
 def is_administrator(current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRoleEnum.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!"
+        )
     allowed_roles = {UserRoleEnum.ADMIN}
 
     if current_user.role in allowed_roles:
         return current_user
     else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied!")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied!"
+        )
 
 
 def is_moderator(current_user: User = Depends(get_current_user)):
+    if current_user.role not in [UserRoleEnum.ADMIN, UserRoleEnum.MOD]:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!"
+        )
 
     allowed_roles = {UserRoleEnum.ADMIN, UserRoleEnum.MOD}
 
     if current_user.role in allowed_roles:
         return current_user
     else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied!")
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Access denied!"
+        )
 
- 
 
-
-def is_user(current_user: User = Depends(get_current_user)):
-    allowed_roles = {UserRoleEnum.ADMIN, UserRoleEnum.MOD, UserRoleEnum.USER}
-
-    if current_user.role in allowed_roles:
-        return current_user
-    else:
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="Access denied!")
+def is_standard_user(current_user: User = Depends(get_current_user)):
+    if current_user.role != UserRoleEnum.STANDARD_USER:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN, detail="Unauthorized!"
+        )

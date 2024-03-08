@@ -1,36 +1,33 @@
 from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status, Query
-import cloudinary
-import cloudinary.uploader
-import cloudinary.api
 from sqlalchemy.orm import Session
-from src.database.db import get_db
-from src.database.models import Picture, QRCode
+from typing import List
 
 import qrcode
-from src.routes import comments
+
+
+# import cloudinary
+# import cloudinary.uploader
+# import cloudinary.api
+
+from src.database.db import get_db
+from src.database.models import Picture, QRCode
 from src.schemas import (
     QRCodeRequest,
     PictureResponse,
     PictureResponseDetails,
-    Comment2Display,
 )
-
 from src.conf.config import settings
-
-from src.services.exceptions_func import no_comment_exception, no_picture_exception
+from src.services.exceptions import raise_404_exception_if_one_should
 from src.services import pictures as pictures_service
-
+from src.routes import comments
 from src.repository import pictures as pictures_repo
-from src.repository import comments as comments_repo
-from src.repository import tags as tags_repo
 
-from typing import List
 
-cloud_name = settings.cloud_name
-api_key = settings.api_key
-api_secret = settings.api_secret
+# cloud_name = settings.cloud_name
+# api_key = settings.api_key
+# api_secret = settings.api_secret
 
-cloudinary.config(cloud_name=cloud_name, api_key=api_key, api_secret=api_secret)
+# cloudinary.config(cloud_name=cloud_name, api_key=api_key, api_secret=api_secret)
 
 router = APIRouter(prefix="/pictures", tags=["pictures"])
 router.include_router(comments.router)
@@ -55,44 +52,37 @@ async def upload_image_mod(
     cloudinary_result = await pictures_service.apply_effects(
         file.file, public_id, transformation
     )
-    database_result = await pictures_repo.copy_picture_from_cloudinary_to_database(
-        cloudinary_result, description, db
+
+    try:
+        file_url = cloudinary_result["file_url"]
+        public_id = cloudinary_result["public_id"]
+    except:
+        raise HTTPException(status_code=status.HTTP_424_FAILED_DEPENDENCY)
+
+    picture = await pictures_repo.add_picture(
+        url=file_url, public_id=public_id, description=description, db=db
     )
-    return database_result
+    return picture
 
 
 @router.get("/{picture_id}", response_model=PictureResponse)
-async def picture_details(picture_id: int, db: Session = Depends(get_db)):
-    no_picture_exception(picture_id=picture_id, db=db)
+async def get_picture(picture_id: int, db: Session = Depends(get_db)):
     picture = await pictures_repo.get_picture(picture_id=picture_id, db=db)
+    raise_404_exception_if_one_should(picture, "Picture")
     return picture
 
 
 @router.get("/{picture_id}/details", response_model=PictureResponseDetails)
-async def picture_details(picture_id: int, db: Session = Depends(get_db)):
-    no_picture_exception(picture_id=picture_id, db=db)
+async def get_picture_details(picture_id: int, db: Session = Depends(get_db)):
     picture = await pictures_repo.get_picture(picture_id=picture_id, db=db)
-
+    raise_404_exception_if_one_should(picture, "Picture")
     return picture
 
 
 @router.get("/", response_model=List[PictureResponse])
 async def display_pictures(db: Session = Depends(get_db)):
     result = db.query(Picture).all()
-
     return result
-
-
-@router.delete("/{picture_id}", response_model=PictureResponse)
-async def delete_file(picture_id: int, db: Session = Depends(get_db)):
-
-    no_picture_exception(picture_id=picture_id, db=db)
-    picture = await pictures_repo.get_picture(picture_id=picture_id, db=db)
-    public_id = picture.public_id
-    cloudinary_result = await pictures_service.delete_file(public_id)
-    database_result = await pictures_repo.delete_picture(picture_id=picture_id, db=db)
-
-    return database_result
 
 
 @router.put("/{picture_id}", response_model=PictureResponse)
@@ -102,10 +92,22 @@ async def edit_description(
     db: Session = Depends(get_db),
 ):
 
-    no_picture_exception(picture_id=picture_id, db=db)
     database_result = await pictures_repo.edit_picture_description(
         picture_id=picture_id, db=db, new_description=new_description
     )
+    raise_404_exception_if_one_should(database_result, "Picture")
+
+    return database_result
+
+
+@router.delete("/{picture_id}", response_model=PictureResponse)
+async def delete_file(picture_id: int, db: Session = Depends(get_db)):
+
+    picture = await pictures_repo.get_picture(picture_id=picture_id, db=db)
+    raise_404_exception_if_one_should(picture, "Picture")
+    public_id = picture.public_id
+    cloudinary_result = await pictures_service.delete_file(public_id)
+    database_result = await pictures_repo.delete_picture(picture_id=picture_id, db=db)
 
     return database_result
 
