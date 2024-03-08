@@ -1,26 +1,33 @@
-from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status, Query
+from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status
+import cloudinary
+import cloudinary.uploader
+import cloudinary.api
 from sqlalchemy.orm import Session
-from typing import List
+from src.database.db import get_db
+from src.database.models import Picture, QRCode, Tag
 
 import qrcode
-
-
-# import cloudinary
-# import cloudinary.uploader
-# import cloudinary.api
-
-from src.database.db import get_db
-from src.database.models import Picture, QRCode
-from src.schemas import (
-    QRCodeRequest,
-    PictureResponse,
-    PictureResponseDetails,
-)
-from src.conf.config import settings
-from src.services.exceptions import raise_404_exception_if_one_should
-from src.services import pictures as pictures_service
 from src.routes import comments
+from src.schemas import QRCodeRequest, PictureResponse, PictureResponseDetails
+
+from src.conf.config import settings
+
+from src.services.exceptions_func import no_comment_exception, no_picture_exception, no_tag_exception
+from src.services import pictures as pictures_service
+
 from src.repository import pictures as pictures_repo
+from src.repository import comments as comments_repo
+from src.repository import tags as tags_repo
+
+from src.services.exceptions_func import (TAG_IS_ALREADY_ASSIGNED_TO_PICTURE, PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
+                                          TAG_IS_NOT_ASSIGNED_TO_PICTURE,
+                                          TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED)
+
+from typing import List
+
+cloud_name = settings.cloud_name
+api_key = settings.api_key
+api_secret = settings.api_secret
 
 
 # cloud_name = settings.cloud_name
