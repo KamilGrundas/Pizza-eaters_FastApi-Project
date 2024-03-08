@@ -26,28 +26,30 @@ async def get_user_by_username(username: str, db: Session) -> UserDb:
     return user
 
 
-async def update_user_info(user_new_info: UserModel, db: Session) -> UserDb:
+async def update_user(username: str, new_username: str, db: Session) -> UserDb:
 
-    user = db.query(User).filter(User.user_new_info == user_new_info).first()
+    user = db.query(User).filter(User.username == username).first()
 
     if user is None:
-        raise HTTPException(status_code=404, detail="User not found")
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+
+    user.username = new_username
     db.commit()
     db.refresh(user)
 
     return user
 
 
-async def ban_user(username: str, db: Session) -> None:
-
+def ban_user(username: str, db: Session) -> User:
     user = db.query(User).filter(User.username == username).first()
 
-    if user is None:
-        raise HTTPException(status_code=404, detail=f"User '{username}' not found")
-
-    db.delete(user)
-    db.refresh(user)
-    db.commit()
+    if user:
+        user.is_banned = True
+        db.commit()
+        db.refresh(user)
+        return user
+    else:
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN, detail="User '{username}' is already banned")
 
 
 async def update_token(user: User, token: str | None, db: Session) -> None:
