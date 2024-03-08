@@ -2,59 +2,87 @@
 
 {% block content %}
 
+<script>
+    async function signup() {
+        const formData = new FormData(document.getElementById('signupForm'));
+        const formDataJson = {};
+        formData.forEach((value, key) => {
+            formDataJson[key] = value;
+        });
+        const response = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formDataJson)
+        });
+        const data = await response.json();
+        console.log(data);
+        if (response.ok) {
+        	alert('User successfully created. Check your email for confirmation.');
+        	window.location.href = '/';
+    	} else {
+        // Handle errors or display appropriate messages
+        alert('Failed to sign up. Please try again later.');
+    	}
+    }
+</script>
+
 <div class="login-wrap">
 	<div class="login-html">
 		<input id="tab-1" type="radio" name="tab" class="sign-in" checked><label for="tab-1" class="tab">Sign In</label>
 		<input id="tab-2" type="radio" name="tab" class="sign-up"><label for="tab-2" class="tab">Sign Up</label>
 		<div class="login-form">
 			<div class="sign-in-htm">
-				<div class="group">
-					<label for="user" class="label">Username</label>
-					<input id="user" type="text" class="input">
-				</div>
-				<div class="group">
-					<label for="pass" class="label">Password</label>
-					<input id="pass" type="password" class="input" data-type="password">
-				</div>
-				<div class="group">
-					<input id="check" type="checkbox" class="check" checked>
-					<label for="check"><span class="icon"></span> Keep me Signed in</label>
-				</div>
-				<div class="group">
-					<input type="submit" class="button" value="Sign In">
-				</div>
-				<div class="hr"></div>
-				<div class="foot-lnk">
-					<a href="#forgot">Forgot Password?</a>
-				</div>
+				<form action="/api/auth/login" method="post">
+					<div class="group">
+						<label for="user" class="label">Username</label>
+						<input id="user" type="text" class="input">
+					</div>
+					<div class="group">
+						<label for="pass" class="label">Password</label>
+						<input id="pass" type="password" class="input" data-type="password">
+					</div>
+					<div class="group">
+						<input id="check" type="checkbox" class="check" checked>
+						<label for="check"><span class="icon"></span> Keep me Signed in</label>
+					</div>
+					<div class="group">
+						<input type="submit" class="button" value="Sign In">
+					</div>
+					<div class="hr"></div>
+					<div class="foot-lnk">
+						<a href="#forgot">Forgot Password?</a>
+					</div>
+				</form>
 			</div>
 			<div class="sign-up-htm">
-				<div class="group">
-					<label for="user" class="label">Username</label>
-					<input id="user" type="text" class="input">
-				</div>
-				<div class="group">
-					<label for="pass" class="label">Password</label>
-					<input id="pass" type="password" class="input" data-type="password">
-				</div>
-				<div class="group">
-					<label for="pass" class="label">Repeat Password</label>
-					<input id="pass" type="password" class="input" data-type="password">
-				</div>
-				<div class="group">
-					<label for="pass" class="label">Email Address</label>
-					<input id="pass" type="text" class="input">
-				</div>
-				<div class="group">
-					<input type="submit" class="button" value="Sign Up">
-				</div>
-				<div class="hr"></div>
-				<div class="foot-lnk">
-					<label for="tab-1">Already Member?</a>
-				</div>
+				<form id="signupForm" action="/api/auth/signup" method="post">
+					<div class="group">
+						<label for="username" class="label">Username</label>
+						<input id="username" name="username" type="text" class="input">
+					</div>
+					<div class="group">
+						<label for="email" class="label">Email</label>
+						<input id="email" name="email" type="email" class="input">
+					</div>
+					<div class="group">
+						<label for="password" class="label">Password</label>
+						<input id="password" name="password" type="password" class="input">
+					</div>
+					<div class="group">
+						<label for="confirm_password" class="label">Confirm Password</label>
+						<input id="confirm_password" name="confirm_password" type="password" class="input">
+					</div>
+					<div class="group">
+						<input type="button" class="button" value="Sign Up" onclick="signup()">
+					</div>
+				</form>
 			</div>
 		</div>
 	</div>
 </div>
+
+
 
 {% endblock %}

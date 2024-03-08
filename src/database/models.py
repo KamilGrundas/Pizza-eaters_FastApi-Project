@@ -23,7 +23,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
     created_at = Column("crated_at", DateTime, default=func.now())
     confirmed = Column(Boolean, default=False)
-    role = Column(String(255), nullable=False)
+    role = Column(String(255), nullable=False, default='user')
     is_banned = Column(Boolean, default=False)
     # pictures = relationship("Picture", back_populates="user") to be uncommented
     # comments = relationship("Comment", back_populates="user") to be uncommented
