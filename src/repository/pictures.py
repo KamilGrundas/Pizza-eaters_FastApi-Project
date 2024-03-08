@@ -42,7 +42,14 @@ async def add_tag(picture_id: int, tag_id: int, db: Session):
     picture.tags.append(tag)
     db.commit()
     return 0
-
+async def delete_tag(tag_id: int, picture_id: int, db: Session):
+    tag = db.query(Tag).filter(Tag.id == tag_id).first()
+    picture = db.query(Picture).filter(Picture.id == picture_id).first()
+    if tag not in picture.tags:
+        return -4
+    picture.tags.delete(tag)
+    db.commit()
+    return 0
 
 async def get_pictures(db: Session) -> List[Picture]:
     pictures = db.query(Picture).filter(Picture.is_deleted == False).all()
