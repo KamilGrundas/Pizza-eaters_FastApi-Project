@@ -8,8 +8,12 @@ from src.database.models import User, Comment, Picture
 
 import src.repository.comments as comments_repo
 
-from src.services.exceptions_func import no_comment_exception, no_picture_exception
+from src.services.exceptions import (
+    raise_404_exception_if_one_should,
+)
 import src.services.auth as auth_service
+
+current_user = auth_service.get_current_active_user
 
 
 router = APIRouter(
@@ -22,19 +26,21 @@ async def add_new_comment(
     picture_id: int,
     body: CommentBase,
     db: Session = Depends(get_db),
-    user: User = Depends(auth_service.get_current_active_user),
+    user: User = Depends(current_user),
 ) -> Comment:
-    # to docelowo może zrobić każdy zalogowany użytkownik ale na razie każdy
-    no_picture_exception(picture_id, db)
-    new_comment = await comments_repo.create_new_comment(body, db, picture_id)
+    new_comment = await comments_repo.add_comment(body, 
+                                                  db, 
+                                                  picture_id, 
+                                                  user
+                                                  )
     return new_comment
 
 
 @router.get("/", response_model=List[CommentResponse])
 async def get_comments(picture_id: int, db: Session = Depends(get_db)) -> List[Comment]:
     # to może zrobić każdy
-    no_picture_exception(picture_id, db)
     comments = await comments_repo.get_comments(db, picture_id)
+
     return comments
 
 
@@ -42,8 +48,8 @@ async def get_comments(picture_id: int, db: Session = Depends(get_db)) -> List[C
 async def get_comment(
     picture_id: int, picture_comment_id: int, db: Session = Depends(get_db)
 ):
-    no_comment_exception(picture_id, picture_comment_id, db)
     comment = await comments_repo.get_comment(db, picture_id, picture_comment_id)
+    raise_404_exception_if_one_should(comment, "Comment")
     return comment
 
 
@@ -56,11 +62,12 @@ async def edit_comment(
     picture_comment_id: int,
     body: CommentBase,
     db: Session = Depends(get_db),
+    user: User = Depends(current_user)
 ) -> Comment:
-    no_comment_exception(picture_id, picture_comment_id, db)
     updated_comment = await comments_repo.edit_comment(
         body, db, picture_id, picture_comment_id
     )
+    raise_404_exception_if_one_should(updated_comment, "Comment")
     return updated_comment
 
 
@@ -69,12 +76,15 @@ async def edit_comment(
     response_model=CommentResponse,
 )
 async def delete_comment(
-    picture_id: int, picture_comment_id: int, db: Session = Depends(get_db)
+    picture_id: int, 
+    picture_comment_id: int, 
+    db: Session = Depends(get_db),
+    user: User = Depends(auth_service.admin)
 ) -> Comment:
-    no_comment_exception(picture_id, picture_comment_id, db)
     deleted_comment = await comments_repo.delete_comment(
         db, picture_id, picture_comment_id
     )
+    raise_404_exception_if_one_should(deleted_comment, "Comment")
     return deleted_comment
 
 

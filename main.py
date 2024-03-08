@@ -44,14 +44,22 @@ async def get_home(request: Request, db: Session = Depends(get_db)):
         "index.html", {"request": request, "context": context}
     )
 
+
 @app.post("/picture-detail/{picture_id}", status_code=status.HTTP_201_CREATED)
 @app.get("/picture-detail/{picture_id}", response_class=HTMLResponse)
-async def get_picture(request: Request, picture_id: int, db: Session = Depends(get_db), comment_text: str = Form(None)):
-    picture = await pictures_repo.get_picture_details(picture_id, db)
+async def get_picture(
+    request: Request,
+    picture_id: int,
+    db: Session = Depends(get_db),
+    comment_text: str = Form(None),
+):
+    picture = await pictures_repo.get_picture(picture_id, db)
     context = {"picture": picture}
     if request.method == "POST" and comment_text:
         await comments.add_new_comment(picture_id, CommentBase(text=comment_text), db)
-    return templates.TemplateResponse("picture.html", {"request": request, "context": context})
+    return templates.TemplateResponse(
+        "picture.html", {"request": request, "context": context}
+    )
 
 
 if __name__ == "__main__":
