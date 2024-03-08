@@ -12,14 +12,17 @@ from src.schemas import QRCodeRequest, PictureResponse, PictureResponseDetails
 
 from src.conf.config import settings
 
-from src.services.exceptions_func import no_comment_exception, no_picture_exception, no_tag_exception
+from src.services.exceptions import (raise_404_exception_if_one_should,
+                                     check_if_picture_exists,
+                                     check_if_tag_exists,
+                                     check_if_comment_exists)
 from src.services import pictures as pictures_service
 
 from src.repository import pictures as pictures_repo
 from src.repository import comments as comments_repo
 from src.repository import tags as tags_repo
 
-from src.services.exceptions_func import (TAG_IS_ALREADY_ASSIGNED_TO_PICTURE, PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
+from src.services.exceptions import (TAG_IS_ALREADY_ASSIGNED_TO_PICTURE, PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
                                           TAG_IS_NOT_ASSIGNED_TO_PICTURE,
                                           TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED)
 
@@ -118,7 +121,41 @@ async def delete_file(picture_id: int, db: Session = Depends(get_db)):
 
     return database_result
 
+@router.put("/{picture_id}/add_tag")  # to zmieniam
+async def edit_description(picture_id: int, tag_id: int,  db: Session = Depends(get_db)):
 
+    check_if_picture_exists(picture_id=picture_id, db=db)
+    check_if_tag_exists(tag_id=tag_id, db=db)
+
+    database_result = await pictures_repo.add_tag(picture_id, tag_id, db)
+
+    if database_result == -3:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND,
+                            detail="Tag is already added to picture and picture has already 5 tags assigned")
+
+    if database_result==TAG_IS_ALREADY_ASSIGNED_TO_PICTURE:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Tag is already assigned to picture.")
+
+    if database_result==PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Picture has already five tags assigned")
+
+    return "ok"
+
+
+
+@router.put("/{picture_id}/delete_tag")  # to zmieniam
+async def edit_description(picture_id: int, tag_id: int,  db: Session = Depends(get_db)):
+
+    check_if_picture_exists(picture_id=picture_id, db=db)
+    check_if_tag_exists(tag_id=tag_id, db=db)
+
+    database_result = await pictures_repo.delete_tag(picture_id, tag_id, db)
+
+    if database_result == 0:
+        return "ok"
+
+    if database_result == TAG_IS_NOT_ASSIGNED_TO_PICTURE:
+        return "Tag is not assigned to picture"
 # te rzeczy poniżej też trzeba jakoś podłączyć do reszty ale to zaraz
 
 

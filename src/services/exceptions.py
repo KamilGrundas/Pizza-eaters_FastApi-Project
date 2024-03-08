@@ -12,8 +12,9 @@ TAG_IS_ALREADY_ASSIGNED_TO_PICTURE = -2
 TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED = -3
 TAG_IS_NOT_ASSIGNED_TO_PICTURE = -4
 
-async def check_if_picture_exists(picture_id: int, db: Session):
-
+#async def check_if_picture_exists(picture_id: int, db: Session):
+#tu raczej nie powinno być async bo to jest procedura pomocnicza
+def check_if_picture_exists(picture_id: int, db: Session):
     exc = HTTPException(
         status_code=status.HTTP_404_NOT_FOUND, detail="Picture not found"
     )
