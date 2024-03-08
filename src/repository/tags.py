@@ -15,10 +15,13 @@ async def get_tag(tag_id: int, db: Session) -> Tag:
 
 
 async def create_tag(body: TagModel, db: Session) -> Tag:
+
     tag = Tag(name=body.name.lower())
+
     db.add(tag)
     db.commit()
     db.refresh(tag)
+
     return tag
 
 
