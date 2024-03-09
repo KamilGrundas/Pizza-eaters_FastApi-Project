@@ -78,6 +78,10 @@ class UserResponse(BaseModel):
     detail: str = "User successfully created"
 
 
+class UserUpdateModel(BaseModel):
+    username: str = Field(min_length=4, max_length=15)
+
+
 class UserRoleEnum(str, Enum):
     ADMIN = "administrator"
     MOD = "moderator"
