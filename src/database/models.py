@@ -23,11 +23,11 @@ class User(Base):
     password = Column(String(255), nullable=False)
     created_at = Column("crated_at", DateTime, default=func.now())
     confirmed = Column(Boolean, default=False)
-    role = Column(String(255), nullable=False, default='user')
+    role = Column(String(255), nullable=False, default="user")
     refresh_token = Column(String(255), nullable=True)
     is_banned = Column(Boolean, default=False)
-    pictures = relationship("Picture", back_populates="user")
-    comments = relationship("Comment", back_populates="user")
+    # pictures = relationship("Picture", back_populates="user")
+    # comments = relationship("Comment", back_populates="user")
 
 
 class Tag(Base):
@@ -49,7 +49,6 @@ class Picture(Base):
     qr_url = Column(String(255), nullable=True)
 
 
-
 class Comment(Base):
     __tablename__ = "comments"
     # id = Column(Integer, primary_key=True, autoincrement=True)
@@ -68,5 +67,3 @@ class Comment(Base):
             "picture_id", "picture_comment_id", name="unique_pair_picture_comment"
         ),
     )
-
-
