@@ -10,7 +10,7 @@ from src.schemas import PictureResponse
 
 from fastapi import Depends, status
 
-from src.routes import auth, tags, comments
+from src.routes import auth, tags, comments, fake_auth
 from src.routes import pictures as pict
 
 from sqlalchemy.orm import Session

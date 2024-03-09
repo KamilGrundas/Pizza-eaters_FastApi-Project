@@ -11,6 +11,8 @@ async def add_comment(
     body: CommentBase, db: Session, picture_id: int, author: User
 ) -> Comment:
 
+    print(author)
+
     await check_if_picture_exists(picture_id, db)
     picture_comments_num = (
         db.query(Comment).filter(Comment.picture_id == picture_id).count()

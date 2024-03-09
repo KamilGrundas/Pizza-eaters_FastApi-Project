@@ -12,8 +12,7 @@ from src.services.exceptions import (
     raise_404_exception_if_one_should,
 )
 import src.services.auth as auth_service
-
-current_user = auth_service.get_current_active_user
+from src.services.auth import get_current_user as current_user
 
 
 router = APIRouter(
