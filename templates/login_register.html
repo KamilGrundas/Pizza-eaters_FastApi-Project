@@ -27,7 +27,7 @@
     	}
     }
 	async function login() {
-    const formData = new FormData(document.getElementById('loginForm'));
+	const formData = new FormData(document.getElementById('loginForm'));
     const urlEncodedData = new URLSearchParams();
     formData.forEach((value, key) => {
         urlEncodedData.append(key, value);
@@ -39,15 +39,24 @@
         },
         body: urlEncodedData
     });
-    const data = await response.json();
-    console.log(data);
     if (response.ok) {
-        const { token } = await response.json();
-        localStorage.setItem('jwtToken', token); // Store the token
+        const data = await response.json(); // Read the response stream only once
+        console.log(data);
+        
+        // If your token is in data.accessToken or another property, make sure to change the code here
+        localStorage.setItem('jwtToken', data.access_token); // Store the token, assuming your token is in the 'access_token' field
+        
         alert('Login successful. Welcome back!');
-        window.location.href = '/';
+        window.location.href = '/'; // Redirect to a new page or refresh the current page
     } else {
-        alert('Failed to log in. Please check your username and password and try again.');
+        // If the response is not ok, then we can try to parse and display the error
+        try {
+            const errorData = await response.json();
+            console.log('Login failed:', errorData);
+            alert('Failed to log in. Please check your username and password and try again.');
+        } catch (jsonError) {
+            alert('Failed to log in, and also failed to parse error response.');
+        }
     }
 }
 
