@@ -10,7 +10,7 @@ from src.schemas import PictureResponse
 
 from fastapi import Depends, status
 
-from src.routes import auth, tags, comments, fake_auth
+from src.routes import auth, tags, comments, auth_new
 from src.routes import pictures as pict
 
 from sqlalchemy.orm import Session
@@ -21,9 +21,10 @@ app = FastAPI()
 
 
 # app.include_router(image_upload.router)
-app.include_router(auth.router, prefix="/api")
+# app.include_router(auth.router, prefix="/api")
 app.include_router(pict.router, prefix="/wizards")
 app.include_router(tags.router, prefix="/wizards")
+app.include_router(auth_new.router, prefix="/api")
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")

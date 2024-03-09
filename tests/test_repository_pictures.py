@@ -1,4 +1,3 @@
-
 import pytest
 
 from unittest.mock import MagicMock
@@ -9,7 +8,6 @@ from datetime import datetime
 from src.database.models import Picture, User, Tag
 from src.schemas import ContactBase
 from src.repository.pictures import get_picture, get_pictures
-
 
 
 @pytest.fixture(scope="module")
@@ -25,8 +23,9 @@ def picture():
         "url": "some_url",
         "public_id": "picture_name",
         "description": None,
-        "user_id": 1
+        "user_id": 1,
     }
+
 
 @pytest.fixture(scope="module")
 def tags():
@@ -53,7 +52,5 @@ async def prepare_picture(session, tags, picture, comment):
     picture = Picture()
 
 
-
 async def test_get_pictures(session):
-
-
+    pass

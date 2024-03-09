@@ -57,10 +57,10 @@ class TagResponse(BaseModel):
 
 
 class UserModel(BaseModel):
-    username: str = Field(min_length=5, max_length=16)
+    username: str = Field(min_length=2, max_length=16)
     email: str
-    password: str = Field(min_length=8, max_length=16)
-    is_banned: bool = False
+    password: str = Field(min_length=2, max_length=16)
+    # is_banned: bool = False
 
 
 class UserDb(BaseModel):
@@ -147,4 +147,3 @@ class PictureResponseDetails(PictureResponse):
     # tags = relationship("Tag", secondary=picture_m2m_tag, backref="pictures")
     # comments = relationship("Comment", backref="pictures")
     # is_deleted = Column(Boolean, default=False)
-

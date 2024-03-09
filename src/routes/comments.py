@@ -11,8 +11,10 @@ import src.repository.comments as comments_repo
 from src.services.exceptions import (
     raise_404_exception_if_one_should,
 )
-import src.services.auth as auth_service
-from src.services.auth import get_current_user as current_user
+
+# import src.services.auth as auth_service
+
+from src.services import auth_new as auth_service
 
 
 router = APIRouter(
@@ -25,9 +27,9 @@ async def add_new_comment(
     picture_id: int,
     body: CommentBase,
     db: Session = Depends(get_db),
-    user: User = Depends(current_user),
+    user: User = Depends(auth_service.get_current_user),
 ) -> Comment:
-    new_comment = await comments_repo.add_comment(body, db, picture_id, user)
+    new_comment = await comments_repo.add_comment(body, db, picture_id, user.id)
     return new_comment
 
 
@@ -41,9 +43,14 @@ async def get_comments(picture_id: int, db: Session = Depends(get_db)) -> List[C
 
 @router.get("/{picture_comment_id}", response_model=CommentResponse)
 async def get_comment(
-    picture_id: int, picture_comment_id: int, db: Session = Depends(get_db)
+    picture_id: int,
+    picture_comment_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(auth_service.get_current_user),
 ):
-    comment = await comments_repo.get_comment(db, picture_id, picture_comment_id)
+    comment = await comments_repo.get_comment(
+        db, picture_id, picture_comment_id, user.id
+    )
     raise_404_exception_if_one_should(comment, "Comment")
     return comment
 
@@ -57,10 +64,10 @@ async def edit_comment(
     picture_comment_id: int,
     body: CommentBase,
     db: Session = Depends(get_db),
-    user: User = Depends(current_user),
+    user: User = Depends(auth_service.get_current_user),
 ) -> Comment:
     updated_comment = await comments_repo.edit_comment(
-        body, db, picture_id, picture_comment_id
+        body, db, picture_id, picture_comment_id, user.id
     )
     raise_404_exception_if_one_should(updated_comment, "Comment")
     return updated_comment
@@ -74,7 +81,7 @@ async def delete_comment(
     picture_id: int,
     picture_comment_id: int,
     db: Session = Depends(get_db),
-    # user: User = Depends(auth_service.admin)
+    user: User = Depends(auth_service.get_mod),
 ) -> Comment:
     deleted_comment = await comments_repo.delete_comment(
         db, picture_id, picture_comment_id
