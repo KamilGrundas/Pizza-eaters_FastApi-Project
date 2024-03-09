@@ -26,36 +26,70 @@
         alert('Failed to sign up. Please try again later.');
     	}
     }
-</script>
+	async function login() {
+	const formData = new FormData(document.getElementById('loginForm'));
+    const urlEncodedData = new URLSearchParams();
+    formData.forEach((value, key) => {
+        urlEncodedData.append(key, value);
+    });
+    const response = await fetch('/api/auth/login', {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/x-www-form-urlencoded'
+        },
+        body: urlEncodedData
+    });
+    if (response.ok) {
+        const data = await response.json(); // Read the response stream only once
+        console.log(data);
+        
+        // If your token is in data.accessToken or another property, make sure to change the code here
+        localStorage.setItem('jwtToken', data.access_token); // Store the token, assuming your token is in the 'access_token' field
+        
+        alert('Login successful. Welcome back!');
+        window.location.href = '/'; // Redirect to a new page or refresh the current page
+    } else {
+        // If the response is not ok, then we can try to parse and display the error
+        try {
+            const errorData = await response.json();
+            console.log('Login failed:', errorData);
+            alert('Failed to log in. Please check your username and password and try again.');
+        } catch (jsonError) {
+            alert('Failed to log in, and also failed to parse error response.');
+        }
+    }
+}
 
+
+</script>
 <div class="login-wrap">
 	<div class="login-html">
 		<input id="tab-1" type="radio" name="tab" class="sign-in" checked><label for="tab-1" class="tab">Sign In</label>
 		<input id="tab-2" type="radio" name="tab" class="sign-up"><label for="tab-2" class="tab">Sign Up</label>
 		<div class="login-form">
 			<div class="sign-in-htm">
-				<form action="/api/auth/login" method="post">
+				<form id="loginForm">
 					<div class="group">
 						<label for="user" class="label">Username</label>
-						<input id="user" type="text" class="input">
+						<input id="user" name="username" type="text" class="input">
 					</div>
 					<div class="group">
 						<label for="pass" class="label">Password</label>
-						<input id="pass" type="password" class="input" data-type="password">
+						<input id="pass" name="password" type="password" class="input" data-type="password">
 					</div>
 					<div class="group">
 						<input id="check" type="checkbox" class="check" checked>
 						<label for="check"><span class="icon"></span> Keep me Signed in</label>
 					</div>
 					<div class="group">
-						<input type="submit" class="button" value="Sign In">
+						<input type="button" class="button" value="Sign In" onclick="login()">
 					</div>
 					<div class="hr"></div>
 					<div class="foot-lnk">
 						<a href="#forgot">Forgot Password?</a>
 					</div>
 				</form>
-			</div>
+			</div>			
 			<div class="sign-up-htm">
 				<form id="signupForm" action="/api/auth/signup" method="post">
 					<div class="group">

@@ -81,7 +81,7 @@ async def login(
 async def confirmed_email(token: str, db: Session = Depends(get_db)):
 
     email = auth.get_email_from_token(token)
-    user = repository_users.get_user_by_email(email, db)
+    user = await repository_users.get_user_by_email(email, db)
     if user is None:
         raise HTTPException(
             status_code=status.HTTP_400_BAD_REQUEST, detail="Verification error"
