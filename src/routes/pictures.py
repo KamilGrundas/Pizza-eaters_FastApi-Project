@@ -28,16 +28,8 @@ from src.services.exceptions import (TAG_IS_ALREADY_ASSIGNED_TO_PICTURE, PICTURE
 
 from typing import List
 
-cloud_name = settings.cloud_name
-api_key = settings.api_key
-api_secret = settings.api_secret
 
 
-# cloud_name = settings.cloud_name
-# api_key = settings.api_key
-# api_secret = settings.api_secret
-
-# cloudinary.config(cloud_name=cloud_name, api_key=api_key, api_secret=api_secret)
 
 router = APIRouter(prefix="/pictures", tags=["pictures"])
 router.include_router(comments.router)
