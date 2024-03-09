@@ -29,8 +29,6 @@ from src.services.exceptions import (TAG_IS_ALREADY_ASSIGNED_TO_PICTURE, PICTURE
 from typing import List
 
 
-
-
 router = APIRouter(prefix="/pictures", tags=["pictures"])
 router.include_router(comments.router)
 
@@ -41,6 +39,9 @@ async def upload_image_mod(
     color_mod: str | None = Query(
         default=None, description="e.g.: sepia, blackwhite, negate"
     ),
+    crop: str | None = Query(
+        default="fill", description="e.g.: fill, fit, scale"
+    ),
     width: int | None = None,
     height: int | None = None,
     angle: int | None = None,
@@ -49,7 +50,7 @@ async def upload_image_mod(
     db: Session = Depends(get_db),
 ) -> PictureResponse:
     transformation = pictures_service.make_transformation(
-        color_mod=color_mod, width=width, height=height, angle=angle
+        color_mod=color_mod, width=width, height=height, angle=angle, crop=crop
     )
     cloudinary_result = await pictures_service.apply_effects(
         file.file, public_id, transformation
@@ -113,6 +114,7 @@ async def delete_file(picture_id: int, db: Session = Depends(get_db)):
 
     return database_result
 
+
 @router.put("/{picture_id}/add_tag")  # to zmieniam
 async def edit_description(picture_id: int, tag_id: int,  db: Session = Depends(get_db)):
 
@@ -132,7 +134,6 @@ async def edit_description(picture_id: int, tag_id: int,  db: Session = Depends(
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="Picture has already five tags assigned")
 
     return "ok"
-
 
 
 @router.put("/{picture_id}/delete_tag")  # to zmieniam
@@ -183,9 +184,6 @@ async def get_qr_code(qr_code_id: int, db: Session = Depends(get_db)):
     if not qr_code:
         raise HTTPException(status_code=404, detail="QR code not found")
     return qr_code.url
-
-
-# #
 
 
 # def get_download_link(public_id):

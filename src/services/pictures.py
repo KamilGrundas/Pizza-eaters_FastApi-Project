@@ -4,9 +4,9 @@ import cloudinary.api
 from src.conf.config import settings
 
 cloudinary.config(
-                cloud_name = settings.cloud_name,
-                api_key = settings.api_key,
-                api_secret = settings.api_secret
+                cloud_name=settings.cloud_name,
+                api_key=settings.api_key,
+                api_secret=settings.api_secret
                 )
 
 
@@ -54,18 +54,40 @@ async def delete_file(public_id: str) -> dict:
         return {"error": f"Wystąpił błąd podczas usuwania zdjęcia: {e}"}
 
 
-def make_transformation(color_mod, width, height, angle):
+# def make_transformation(color_mod, width, height, angle):
+#
+#     transformations = []
+#
+#     if width != None and height != None:
+#         transformations.append({"width": width, "height": height, "crop": "fill"})
+#     if angle != None:
+#         transformations.append({"angle": angle})
+#     if color_mod in [
+#         "sepia",
+#         "blackwhite",
+#         "negate",
+#     ]:
+#         transformations.append({"effect": color_mod})
+#
+#     print(transformations)
+#     return transformations
+
+def make_transformation(color_mod, width, height, angle, crop):
 
     transformations = []
 
-    if width != None and height != None:
-        transformations.append({"width": width, "height": height, "crop": "fill"})
+    if width != None and height != None  and crop != "fill":
+        if crop in ["fit", "scale"]:
+            transformations.append({"width": width, "height": height, "crop": crop})
+        else:
+            transformations.append({"width": width, "height": height, "crop": "fill"})
     if angle != None:
         transformations.append({"angle": angle})
     if color_mod in [
         "sepia",
         "blackwhite",
-        "negate",
+        "negate"
+
     ]:
         transformations.append({"effect": color_mod})
 

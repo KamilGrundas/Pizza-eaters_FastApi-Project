@@ -1,21 +1,17 @@
 import uvicorn
-from fastapi import Request, APIRouter, HTTPException
-from fastapi.templating import Jinja2Templates
+from fastapi import Depends, status
+from fastapi import FastAPI, Form
+from fastapi import Request
 from fastapi.responses import HTMLResponse
 from fastapi.staticfiles import StaticFiles
-from src.schemas import CommentBase, CommentResponse
-from src.repository import pictures as pictures_repo
+from fastapi.templating import Jinja2Templates
+from sqlalchemy.orm import Session
+
 from src.database.db import get_db
-from src.schemas import PictureResponse
-
-from fastapi import Depends, status
-
+from src.repository import pictures as pictures_repo
 from src.routes import auth, tags, comments
 from src.routes import pictures as pict
-
-from sqlalchemy.orm import Session
-from fastapi import FastAPI, File, UploadFile, Form
-
+from src.schemas import CommentBase
 
 app = FastAPI()
 
