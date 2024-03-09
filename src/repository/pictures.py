@@ -11,7 +11,7 @@ from src.database.db import get_db
 
 
 from fastapi import Depends, HTTPException, status
-from src.services.exceptions_func import (TAG_IS_ALREADY_ASSIGNED_TO_PICTURE,
+from src.services.exceptions import (TAG_IS_ALREADY_ASSIGNED_TO_PICTURE,
                                           PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
                                           TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
                                           )
