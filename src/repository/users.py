@@ -26,7 +26,7 @@ async def get_user_by_username(username: str, db: Session) -> UserDb:
     return user
 
 
-async def update_user(username: str, new_username: str, db: Session) -> UserDb:
+async def update_user_in_db(username: str, new_username: str, db: Session) -> UserDb:
 
     user = db.query(User).filter(User.username == username).first()
 
