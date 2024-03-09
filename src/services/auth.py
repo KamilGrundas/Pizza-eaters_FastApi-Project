@@ -8,14 +8,16 @@ from src.schemas import UserRoleEnum
 from sqlalchemy import update
 from sqlalchemy.orm import Session
 from src.conf.config import settings
-
+from src.database.db import get_db
+from src.repository.users import get_user_by_username
+from typing import Optional
 
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token")
+oauth2_scheme = OAuth2PasswordBearer(tokenUrl="token", auto_error=False)
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
@@ -86,7 +88,17 @@ def create_refresh_token(data: dict, expires_delta: timedelta = None):
 
 
 # Auth functions
+def verify_jwt_token(token: str = Depends(oauth2_scheme)) -> Optional[dict]:
+    print(token)
+    if token is None:
+        return None  # Brak tokena, zwracamy None
+    try:
+        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
+        return payload  # Token jest ważny, zwracamy payload
+    except JWTError:
 
+
+        return None  # W przypadku problemu z tokenem, zwracamy None
 
 def verify_token(token: str = Depends(oauth2_scheme)):
     credentials_exception = HTTPException(
@@ -124,7 +136,7 @@ def get_email_from_token(token: str) -> str:
         )
 
 
-def get_current_user(token: str = Depends(oauth2_scheme)):
+async def get_current_user(token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Invalid credentials",
@@ -133,12 +145,12 @@ def get_current_user(token: str = Depends(oauth2_scheme)):
     try:
         payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
         username: str = payload.get("sub")
-        role: str = payload.get("role")
-        if username is None or role is None:
+        if username is None:
             raise credentials_exception
-        return User(
-            username=username, role=role
-        )  # funkcja powinna zwrócić użytkownika z bazy danych, nie tworzyć nowego
+        user = get_user_by_username(db, username)
+        if user is None:
+            raise credentials_exception
+        return user
     except JWTError:
         raise credentials_exception
 

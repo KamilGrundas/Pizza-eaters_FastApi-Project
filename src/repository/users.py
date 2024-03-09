@@ -25,6 +25,11 @@ async def get_user_by_username(username: str, db: Session) -> UserDb:
         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
     return user
 
+async def get_user_by_email(email: str, db: Session) -> UserDb:
+    user = db.query(User).filter(User.email == email).first()
+    if user is None:
+        raise HTTPException(status_code=status.HTTP_404_NOT_FOUND, detail="User not found")
+    return user
 
 async def update_user(username: str, new_username: str, db: Session) -> UserDb:
 

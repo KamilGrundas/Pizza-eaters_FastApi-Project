@@ -10,5 +10,22 @@
     {% include 'navbar.html' %}
     {% block content %}{% endblock %}
     {% include 'footer.html' %}
+<script>
+window.onload = function() {
+    const token = localStorage.getItem('jwtToken'); // Pobierz token z localStorage
+
+    fetch('http://localhost:8000/', { // Zmień URL na swój endpoint
+        method: 'GET',
+        headers: token ? { 'Authorization': `Bearer ${token}` } : {}
+    })
+    .then(response => response.json())
+    .then(data => {
+        console.log(data); // Odpowiedź z serwera
+        // Tutaj możesz zaktualizować DOM strony, aby wyświetlić otrzymane dane
+    })
+    .catch(error => console.error('Błąd:', error));
+};
+</script>
+
 </body>
 </html>

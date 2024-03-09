@@ -3,11 +3,11 @@
 {% block content %}
 
 <div class="container">
-	{% for picture in context["pictures"] %}
+	{% for picture in pictures %}
 
     <div class="image-box">
         <a href="picture-detail/{{picture.id}}"><img src="{{ picture.url }}" alt=""></a>
-        <div>{{description}}</div>
+        <div>{{user}}</div>
     </div>
 
 	{% endfor %}

@@ -9,10 +9,11 @@ from src.database.db import get_db
 from src.schemas import PictureResponse
 
 from fastapi import Depends, status
-
+from src.services.auth import get_current_user, verify_jwt_token, verify_token
 from src.routes import auth, tags, comments
 from src.routes import pictures as pict
-
+from src.repository.users import get_user_by_email
+from typing import Optional
 from sqlalchemy.orm import Session
 from fastapi import FastAPI, File, UploadFile, Form
 
@@ -32,18 +33,44 @@ templates = Jinja2Templates(directory="templates")
 
 @app.get("/login/", response_class=HTMLResponse)
 async def login_page(request: Request):
-    return templates.TemplateResponse("login_register.html", {"request": request})
+    context = None
+    return templates.TemplateResponse("login_register.html", {"request": request, "context": context})
 
+
+# @app.get("/", response_class=HTMLResponse)
+# async def get_home(request: Request, user_payload: Optional[dict] = Depends(verify_jwt_token), db: Session = Depends(get_db)):
+#     pictures = await pictures_repo.get_pictures(db=db)
+#     if not user_payload is None:
+#         email = user_payload["sub"]
+#         user = await get_user_by_email(email, db)
+#         context = {"pictures": pictures, user:"user"}
+#         print(user)
+        
+#     else:
+#         user = None
+#         context = {"pictures": pictures}
+
+    
+#     return templates.TemplateResponse(
+#         "index.html", {"request": request, "context": context}
+#     )
 
 @app.get("/", response_class=HTMLResponse)
-async def get_home(request: Request, db: Session = Depends(get_db)):
-    # zmieniłam w templatce index.html z picture na picture.url
-    pictures = await pictures_repo.get_pictures(db=db)
-    context = {"pictures": pictures}
-    return templates.TemplateResponse(
-        "index.html", {"request": request, "context": context}
-    )
+async def get_home(request: Request, user_payload: Optional[dict] = Depends(verify_jwt_token), db: Session = Depends(get_db)):
+    pictures = await pictures_repo.get_pictures(db=db)  # Przykład, załóżmy, że to jest wynik z bazy danych
+    user = None
+    if user_payload:
+        email = user_payload["sub"]
+        user = await get_user_by_email(email, db)
+        if not user:
+            raise HTTPException(status_code=404, detail="User not found")  # Dodaj obsługę, jeśli użytkownik nie zostanie znaleziony
+        context = {"request": request, "pictures": pictures, "user": user}
+    else:
+        context = {"request": request, "pictures": pictures, "user": user}
 
+    template = "index.html"
+    print(context)
+    return templates.TemplateResponse(template, context)
 
 @app.post("/picture-detail/{picture_id}", status_code=status.HTTP_201_CREATED)
 @app.get("/picture-detail/{picture_id}", response_class=HTMLResponse)
