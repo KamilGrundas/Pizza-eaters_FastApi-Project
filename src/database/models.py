@@ -24,9 +24,10 @@ class User(Base):
     created_at = Column("crated_at", DateTime, default=func.now())
     confirmed = Column(Boolean, default=False)
     role = Column(String(255), nullable=False, default='user')
+    refresh_token = Column(String(255), nullable=True)
     is_banned = Column(Boolean, default=False)
-    # pictures = relationship("Picture", back_populates="user") to be uncommented
-    # comments = relationship("Comment", back_populates="user") to be uncommented
+    pictures = relationship("Picture", back_populates="user")
+    comments = relationship("Comment", back_populates="user")
 
 
 class Tag(Base):
@@ -45,13 +46,8 @@ class Picture(Base):
     comments = relationship("Comment", backref="pictures")
     is_deleted = Column(Boolean, default=False)
     user_id = Column(Integer, ForeignKey("users.id"), nullable=True)
+    qr_url = Column(String(255), nullable=True)
 
-
-class TransformedPicture(Base):
-    __tablename__ = "transformed_pictures"
-    id = Column(Integer, primary_key=True, index=True)
-    url = Column(String)
-    picture_id = Column(Integer, ForeignKey("pictures.id"))
 
 
 class Comment(Base):
@@ -73,13 +69,4 @@ class Comment(Base):
         ),
     )
 
-
-class QRCode(Base):
-    __tablename__ = "qrcodes"
-
-    id = Column(Integer, primary_key=True, index=True)
-    url = Column(String)
-    transformed_picture_id = Column(
-        Integer, ForeignKey("transformed_pictures.id", ondelete="CASCADE")
-    )
 

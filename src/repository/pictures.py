@@ -11,10 +11,11 @@ from src.database.db import get_db
 
 
 from fastapi import Depends, HTTPException, status
-from src.services.exceptions import (TAG_IS_ALREADY_ASSIGNED_TO_PICTURE,
-                                          PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
-                                          TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
-                                          )
+from src.services.exceptions import (
+    TAG_IS_ALREADY_ASSIGNED_TO_PICTURE,
+    PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
+    TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
+)
 
 
 async def add_picture(
@@ -26,14 +27,17 @@ async def add_picture(
     db.refresh(new_picture)
     return new_picture
 
+
 async def add_tag(picture_id: int, tag_id: int, db: Session):
-    picture = db.query(Picture).filter( Picture.id == picture_id ).first()
+    picture = db.query(Picture).filter(Picture.id == picture_id).first()
     tag = db.query(Tag).filter(Tag.id == tag_id).first()
 
-    if (len(picture.tags)>=5) and (tag in picture.tags):
-        return TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED
+    if (len(picture.tags) >= 5) and (tag in picture.tags):
+        return (
+            TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED
+        )
 
-    if len(picture.tags)>=5:
+    if len(picture.tags) >= 5:
         return PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED
 
     if tag in picture.tags:
@@ -42,6 +46,8 @@ async def add_tag(picture_id: int, tag_id: int, db: Session):
     picture.tags.append(tag)
     db.commit()
     return 0
+
+
 async def delete_tag(tag_id: int, picture_id: int, db: Session):
     tag = db.query(Tag).filter(Tag.id == tag_id).first()
     picture = db.query(Picture).filter(Picture.id == picture_id).first()
@@ -50,6 +56,7 @@ async def delete_tag(tag_id: int, picture_id: int, db: Session):
     picture.tags.delete(tag)
     db.commit()
     return 0
+
 
 async def get_pictures(db: Session) -> List[Picture]:
     pictures = db.query(Picture).filter(Picture.is_deleted == False).all()
@@ -71,7 +78,9 @@ async def get_picture(picture_id: int, db: Session) -> Picture:
 #     return picture
 
 
-async def edit_picture_description(picture_id: int, db: Session, new_description: str) -> Picture:
+async def edit_picture_description(
+    picture_id: int, db: Session, new_description: str
+) -> Picture:
     picture = db.query(Picture).filter(Picture.id == picture_id).first()
     if picture != None:
         picture.description = new_description
