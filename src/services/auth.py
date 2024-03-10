@@ -15,7 +15,9 @@ ALGORITHM = settings.algorithm
 ACCESS_TOKEN_EXPIRE_MINUTES = 30
 REFRESH_TOKEN_EXPIRE_DAYS = 7
 
-oauth2_scheme = OAuth2PasswordBearer(tokenUrl="/api/auth/login") # tu był błąd, zamiast urla był wstawiony string "token", niestety poprawienie tego nie załatwia sprawy, bo błędów jest więcej
+oauth2_scheme = OAuth2PasswordBearer(
+    tokenUrl="/api/auth/login"
+)  # tu był błąd, zamiast urla był wstawiony string "token", niestety poprawienie tego nie załatwia sprawy, bo błędów jest więcej
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 
 
