@@ -16,9 +16,6 @@ from src.database.models import User, UserRoleEnum
 from src.conf.config import settings
 
 
-
-
-
 pwd_context = CryptContext(schemes=["bcrypt"], deprecated="auto")
 SECRET_KEY = settings.secret_key
 ALGORITHM = settings.algorithm
@@ -76,6 +73,28 @@ async def decode_refresh_token(refresh_token: str):
         )
 
 
+async def get_logged_user(request: Request, db: Session = Depends(get_db)):
+    user = "User"
+    token_cookie = request.cookies.get("access_token")
+
+    if not token_cookie:
+        user = None
+    try:
+        # Decode JWT
+        payload = jwt.decode(token_cookie, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
+            user = None
+    except JWTError:
+        user = None
+    except:
+        user = None
+
+    if not user == None:
+        user = await repository_users.get_user_by_email(email, db)
+
+    return user
+
 
 async def get_current_user(request: Request, db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
@@ -102,16 +121,15 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)):
     return user
 
 
-
-async def get_admin(user: User=Depends(get_current_user)):
+async def get_admin(user: User = Depends(get_current_user)):
     if user.role == UserRoleEnum.ADMIN:
         return user
-    
+
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)
 
 
-async def get_mod(user: User=Depends(get_current_user)):
+async def get_mod(user: User = Depends(get_current_user)):
     if user.role in [UserRoleEnum.ADMIN, UserRoleEnum.MOD]:
         return user
-    
+
     raise HTTPException(status_code=status.HTTP_403_FORBIDDEN)

@@ -68,7 +68,11 @@ async def upload_image_mod(
         raise HTTPException(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
     picture = await pictures_repo.add_picture(
-        url=file_url, public_id=public_id, description=description, db=db, author_id=user.id
+        url=file_url,
+        public_id=public_id,
+        description=description,
+        db=db,
+        author_id=user.id,
     )
     return picture
 
@@ -110,18 +114,24 @@ async def edit_description(
 
 
 @router.delete("/{picture_id}", response_model=PictureResponse)
-async def delete_file(picture_id: int, db: Session = Depends(get_db), user: User = Depends(auth_service.get_current_user),):
+async def delete_file(
+    picture_id: int,
+    db: Session = Depends(get_db),
+    user: User = Depends(auth_service.get_current_user),
+):
 
     picture = await pictures_repo.get_picture(picture_id=picture_id, db=db)
     raise_404_exception_if_one_should(picture, "Picture")
     public_id = picture.public_id
     cloudinary_result = await pictures_service.delete_file(public_id)
-    database_result = await pictures_repo.delete_picture(picture_id=picture_id, db=db, author_id=user.id)
+    database_result = await pictures_repo.delete_picture(
+        picture_id=picture_id, db=db, author_id=user.id
+    )
 
     return database_result
 
 
-@router.put("/{picture_id}/add_tag") 
+@router.put("/{picture_id}/add_tag")
 async def edit_description(picture_id: int, tag_id: int, db: Session = Depends(get_db)):
 
     check_if_picture_exists(picture_id=picture_id, db=db)
@@ -150,7 +160,7 @@ async def edit_description(picture_id: int, tag_id: int, db: Session = Depends(g
     return "ok"
 
 
-@router.put("/{picture_id}/delete_tag") 
+@router.put("/{picture_id}/delete_tag")
 async def edit_description(picture_id: int, tag_id: int, db: Session = Depends(get_db)):
 
     check_if_picture_exists(picture_id=picture_id, db=db)
