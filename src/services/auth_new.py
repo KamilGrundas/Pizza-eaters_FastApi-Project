@@ -2,7 +2,7 @@ from typing import Optional
 
 
 from jose import JWTError, jwt
-from fastapi import HTTPException, status, Depends
+from fastapi import HTTPException, status, Depends, Request
 from fastapi.security import OAuth2PasswordBearer
 from passlib.context import CryptContext
 from datetime import datetime, timedelta
@@ -76,31 +76,31 @@ async def decode_refresh_token(refresh_token: str):
         )
 
 
-async def get_current_user(
-    token: str = Depends(oauth2_scheme), db: Session = Depends(get_db)
-):
+
+async def get_current_user(request: Request, db: Session = Depends(get_db)):
     credentials_exception = HTTPException(
         status_code=status.HTTP_401_UNAUTHORIZED,
         detail="Could not validate credentials",
         headers={"WWW-Authenticate": "Bearer"},
     )
-
+    token_cookie = request.cookies.get("access_token")
+    print(token_cookie)
+    if not token_cookie:
+        raise credentials_exception
     try:
         # Decode JWT
-        payload = jwt.decode(token, SECRET_KEY, algorithms=[ALGORITHM])
-        if payload["scope"] == "access_token":
-            email = payload["sub"]
-            if email is None:
-                raise credentials_exception
-        else:
+        payload = jwt.decode(token_cookie, SECRET_KEY, algorithms=[ALGORITHM])
+        email = payload.get("sub")
+        if email is None:
             raise credentials_exception
-    except JWTError as e:
+    except JWTError:
         raise credentials_exception
 
     user = await repository_users.get_user_by_email(email, db)
     if user is None:
         raise credentials_exception
     return user
+
 
 
 async def get_admin(user: User=Depends(get_current_user)):

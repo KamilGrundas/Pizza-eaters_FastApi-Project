@@ -15,7 +15,7 @@
                     {% for comment in context["picture"].comments %}
                     <div class="bg-white p-2">
                         <div class="d-flex flex-row user-info">
-                            <div class="d-flex flex-column justify-content-start ml-2"><span class="d-block font-weight-bold name">Username</span><span class="date text-black-50">Shared publicly - {{comment["created_at"]}}</span></div>
+                            <div class="d-flex flex-column justify-content-start ml-2"><span class="d-block font-weight-bold name">{{comment.user_id}}</span><span class="date text-black-50">Shared publicly - {{comment["created_at"]}}</span></div>
                         </div>
                         <div class="mt-2">
                             <p class="comment-text">{{comment["text"]}}</p>
