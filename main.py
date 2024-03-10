@@ -127,7 +127,7 @@ async def get_picture(
     users_data = await asyncio.gather(*[get_user_by_id(comment.user_id, db) for comment in picture.comments])    
     users_dict = {user.id: user for user in users_data}
     for comment in picture.comments:
-        user = users_dict.get(picture.user_id)
+        user = users_dict.get(comment.user_id)
         if user:
             comment.username = user.username
         else:
@@ -150,9 +150,6 @@ async def get_picture(
         "picture.html", {"request": request, "context": context}
     )
 
-@app.get("/register/", response_class=HTMLResponse)
-async def get_register_form(request: Request):
-    return templates.TemplateResponse("register.html", {"request": request})
 
 @app.get("/login", response_class=HTMLResponse,)
 async def login_form(request: Request, current_user: Optional[User] = Depends(get_logged_user)):
