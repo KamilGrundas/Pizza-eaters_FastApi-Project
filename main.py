@@ -150,6 +150,9 @@ async def get_picture(
         "picture.html", {"request": request, "context": context}
     )
 
+@app.get("/register/", response_class=HTMLResponse)
+async def get_register_form(request: Request):
+    return templates.TemplateResponse("register.html", {"request": request})
 
 @app.get("/login", response_class=HTMLResponse,)
 async def login_form(request: Request, current_user: Optional[User] = Depends(get_logged_user)):
@@ -158,7 +161,7 @@ async def login_form(request: Request, current_user: Optional[User] = Depends(ge
     }
     if current_user:
         return RedirectResponse("/")
-    return templates.TemplateResponse("login.html", {"request": request, "context": context})
+    return templates.TemplateResponse("login_register.html", {"request": request, "context": context})
 
 @app.get("/logout")
 async def logout(response: Response,):
