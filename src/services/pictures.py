@@ -72,7 +72,7 @@ async def delete_file(public_id: str) -> dict:
 #     print(transformations)
 #     return transformations
 
-def make_transformation(color_mod, width, height, angle, crop):
+def make_transformation(color_mod, width, height, angle, crop, radius):
 
     transformations = []
 
@@ -86,10 +86,15 @@ def make_transformation(color_mod, width, height, angle, crop):
     if color_mod in [
         "sepia",
         "blackwhite",
-        "negate"
-
+        "negate",
+        "grayscale",
+        "blur"
     ]:
-        transformations.append({"effect": color_mod})
+
+        if color_mod != "blur":
+            transformations.append({"effect": color_mod})
+        elif color_mod == "blur":
+            transformations.append({"effect": f"blur:{radius}"})
 
     print(transformations)
     return transformations
