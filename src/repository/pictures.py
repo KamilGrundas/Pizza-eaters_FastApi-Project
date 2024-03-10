@@ -47,6 +47,7 @@ async def add_tag(picture_id: int, tag_id: int, db: Session):
 
     picture.tags.append(tag)
     db.commit()
+    db.refresh(picture)
     return 0
 
 
