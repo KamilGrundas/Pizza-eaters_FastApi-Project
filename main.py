@@ -67,9 +67,7 @@ async def get_home(request: Request, user_payload: Optional[dict] = Depends(veri
         context = {"request": request, "pictures": pictures, "user": user}
     else:
         context = {"request": request, "pictures": pictures, "user": user}
-
     template = "index.html"
-    print(context)
     return templates.TemplateResponse(template, context)
 
 @app.post("/picture-detail/{picture_id}", status_code=status.HTTP_201_CREATED)
