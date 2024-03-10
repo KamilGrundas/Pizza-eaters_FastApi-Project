@@ -21,7 +21,9 @@ from src.services.exceptions import (
 async def add_picture(
     url: str, public_id: str, description: str, db: Session, author_id: int
 ) -> Picture:
-    new_picture = Picture(url=url, public_id=public_id, description=description, user_id=author_id)
+    new_picture = Picture(
+        url=url, public_id=public_id, description=description, user_id=author_id
+    )
     db.add(new_picture)
     db.commit()
     db.refresh(new_picture)
@@ -81,7 +83,11 @@ async def get_picture(picture_id: int, db: Session) -> Picture:
 async def edit_picture_description(
     picture_id: int, db: Session, new_description: str, author_id: int
 ) -> Picture:
-    picture = db.query(Picture).filter(Picture.id == picture_id, Picture.user_id == author_id).first()
+    picture = (
+        db.query(Picture)
+        .filter(Picture.id == picture_id, Picture.user_id == author_id)
+        .first()
+    )
     if picture != None:
         picture.description = new_description
         db.commit()
@@ -90,7 +96,11 @@ async def edit_picture_description(
 
 
 async def delete_picture(picture_id: int, db: Session, author_id: int) -> Picture:
-    picture = db.query(Picture).filter(Picture.id == picture_id, Picture.user_id == author_id).first()
+    picture = (
+        db.query(Picture)
+        .filter(Picture.id == picture_id, Picture.user_id == author_id)
+        .first()
+    )
     if picture != None:
         picture.is_deleted = True
         db.commit()

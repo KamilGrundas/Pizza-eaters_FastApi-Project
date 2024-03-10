@@ -33,7 +33,7 @@ async def update_tag(tag_id: int, body: TagModel, db: Session) -> Tag | None:
     return tag
 
 
-async def remove_tag(tag_id: int, db: Session)  -> Tag | None:
+async def remove_tag(tag_id: int, db: Session) -> Tag | None:
     tag = db.query(Tag).filter(Tag.id == tag_id).first()
     if tag:
         db.delete(tag)
