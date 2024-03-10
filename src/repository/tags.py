@@ -13,6 +13,21 @@ async def get_tags(skip: int, limit: int, db: Session) -> List[Tag]:
 async def get_tag(tag_id: int, db: Session) -> Tag:
     return db.query(Tag).filter(Tag.id == tag_id).first()
 
+async def get_tag_by_name_or_create(name: str, db: Session) -> Tag:
+    if db.query(Tag).filter(Tag.name == name).first():
+        return db.query(Tag).filter(Tag.name == name).first()
+    else:
+        return await create_tag_form(name, db)
+
+async def create_tag_form(name: str, db: Session) -> Tag:
+
+    tag = Tag(name=name)
+
+    db.add(tag)
+    db.commit()
+    db.refresh(tag)
+
+    return tag
 
 async def create_tag(body: TagModel, db: Session) -> Tag:
 

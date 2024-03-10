@@ -50,6 +50,7 @@ async def upload_image_mod(
     height: Optional[int] = Form(None),
     angle: Optional[int] = Form(None),
     public_id: Optional[str] = Form(None),
+    tags: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     user: User = Depends(auth_service.get_current_user),
 ) -> PictureResponse:
@@ -66,6 +67,7 @@ async def upload_image_mod(
     except:
         raise HTTPException(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
+
     picture = await pictures_repo.add_picture(
         url=file_url,
         public_id=public_id,
@@ -73,6 +75,12 @@ async def upload_image_mod(
         db=db,
         author_id=user.id,
     )
+    if tags:
+
+        for tag in tags.split(" "):
+            new_tag = await tags_repo.get_tag_by_name_or_create(tag, db)
+            await pictures_repo.add_tag(picture.id,new_tag.id,db)
+            
     return picture
 
 
