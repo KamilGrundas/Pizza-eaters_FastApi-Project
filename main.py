@@ -168,6 +168,14 @@ async def logout(response: Response,):
     return {"message": "Logged out"}
 
 
+@app.get("/upload-picture", response_class=HTMLResponse,)
+async def upload_picture_form(request: Request, current_user: Optional[User] = Depends(get_logged_user)):
+    context = {
+        "user": current_user,  # Przekazujesz użytkownika do kontekstu
+    }
+    return templates.TemplateResponse("upload_picture.html", {"request": request, "context": context})
+    
+
 
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
