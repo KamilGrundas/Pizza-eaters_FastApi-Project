@@ -21,8 +21,9 @@ from src.services.auth_new import (
     verify_password,
 )
 from fastapi.security import OAuth2PasswordRequestForm
-from src.repository.users_new import get_user_by_email, update_token
+from src.repository.users_new import get_user_by_email, update_token, get_user_by_id
 from src.services.cookie import AuthTokenMiddleware
+import asyncio
 
 
 app = FastAPI()
@@ -84,7 +85,7 @@ async def login(
     )
 
     # Przekierowanie po pomyślnym logowaniu
-    return {"message": "Cookie has been set"}
+    return {"message": "Logged in"}
 
 
 @app.get("/", response_class=HTMLResponse)
@@ -93,12 +94,20 @@ async def get_home(
     db: Session = Depends(get_db),
     current_user: Optional[User] = Depends(get_logged_user),
 ):
-    # zmieniłam w templatce index.html z picture na picture.url
     pictures = await pictures_repo.get_pictures(db=db)
+    users_data = await asyncio.gather(*[get_user_by_id(picture.user_id, db) for picture in pictures])
+    
+    users_dict = {user.id: user for user in users_data}
+    
+    for picture in pictures:
+        user = users_dict.get(picture.user_id)
+        if user:
+            picture.username = user.username
+        else:
+            picture.username = "Unknown"
+
     context = {"pictures": pictures, "user": current_user}
-    return templates.TemplateResponse(
-        "index.html", {"request": request, "context": context}
-    )
+    return templates.TemplateResponse("index.html", {"request": request, "context": context})
 
 
 @app.post("/picture-detail/{picture_id}", status_code=status.HTTP_201_CREATED)
@@ -113,6 +122,16 @@ async def get_picture(
     ),  # Dodawanie opcjonalnego użytkownika
 ):
     picture = await pictures_repo.get_picture(picture_id, db)
+    picture_author = await get_user_by_id(picture.user_id,db)
+    picture.username = picture_author.username
+    users_data = await asyncio.gather(*[get_user_by_id(comment.user_id, db) for comment in picture.comments])    
+    users_dict = {user.id: user for user in users_data}
+    for comment in picture.comments:
+        user = users_dict.get(picture.user_id)
+        if user:
+            comment.username = user.username
+        else:
+            comment.username = "Unknown"
     context = {
         "picture": picture,
         "user": current_user,  # Przekazujesz użytkownika do kontekstu
@@ -125,16 +144,29 @@ async def get_picture(
             )
         else:
             raise HTTPException(
-                status_code=401, detail="Musisz być zalogowany, aby dodać komentarz."
+                status_code=401, detail="You have to log in to comment."
             )
     return templates.TemplateResponse(
         "picture.html", {"request": request, "context": context}
     )
 
 
-@app.get("/login", response_class=HTMLResponse)
-async def login_form(request: Request):
-    return templates.TemplateResponse("login.html", {"request": request})
+@app.get("/login", response_class=HTMLResponse,)
+async def login_form(request: Request, current_user: Optional[User] = Depends(get_logged_user)):
+    context = {
+        "user": current_user,  # Przekazujesz użytkownika do kontekstu
+    }
+    if current_user:
+        return RedirectResponse("/")
+    return templates.TemplateResponse("login.html", {"request": request, "context": context})
+
+@app.get("/logout")
+async def logout(response: Response,):
+
+    response.delete_cookie("access_token",)
+    response.delete_cookie("refresh_token" )
+    return {"message": "Logged out"}
+
 
 
 if __name__ == "__main__":
