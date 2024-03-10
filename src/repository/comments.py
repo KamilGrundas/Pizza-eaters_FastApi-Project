@@ -8,23 +8,32 @@ from src.services.exceptions import check_if_picture_exists
 
 
 async def add_comment(
-    body: CommentBase, db: Session, picture_id: int, author: User
+    body: CommentBase, db: Session, picture_id: int, author_id: int
 ) -> Comment:
 
-    print(author)
+    print(author_id)
 
     await check_if_picture_exists(picture_id, db)
-    picture_comments_num = (
-        db.query(Comment).filter(Comment.picture_id == picture_id).count()
+    picture_comments_nums_generator = (
+        db.query(Comment)
+        .filter(Comment.picture_id == picture_id)
+        .values(Comment.picture_comment_id)
     )
 
-    print(picture_comments_num)
+    max_num = 0
+
+    for tuple_num in picture_comments_nums_generator:
+        num = tuple_num[0]
+        if num > max_num:
+            max_num = num
+
+    print(f"max_num = {max_num}")
 
     comment = Comment(
         picture_id=picture_id,
-        picture_comment_id=picture_comments_num + 1,
+        picture_comment_id=max_num + 1,
         text=body.text,
-        user_id=author.id,
+        user_id=author_id,
     )
     db.add(comment)
     db.commit()
@@ -46,12 +55,15 @@ async def get_comments(db: Session, picture_id: int) -> List[Comment]:
     return comments
 
 
-async def get_comment(db: Session, picture_id: int, picture_comment_id: int) -> Comment:
+async def get_comment(
+    db: Session, picture_id: int, picture_comment_id: int, author_id: int
+) -> Comment:
     comment = (
         db.query(Comment)
         .filter(
             Comment.picture_id == picture_id,
             Comment.picture_comment_id == picture_comment_id,
+            Comment.user_id == author_id,
         )
         .filter(Comment.is_deleted == False)
         .first()
@@ -60,9 +72,13 @@ async def get_comment(db: Session, picture_id: int, picture_comment_id: int) -> 
 
 
 async def edit_comment(
-    body: CommentBase, db: Session, picture_id: int, picture_comment_id: int
+    body: CommentBase,
+    db: Session,
+    picture_id: int,
+    picture_comment_id: int,
+    author_id: int,
 ) -> Comment:
-    comment = await get_comment(db, picture_id, picture_comment_id)
+    comment = await get_comment(db, picture_id, picture_comment_id, author_id)
     if comment != None:
         comment.text = body.text
         db.commit()

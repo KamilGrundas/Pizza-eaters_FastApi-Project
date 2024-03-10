@@ -4,7 +4,16 @@ from sqlalchemy.ext.declarative import declarative_base
 from sqlalchemy.orm import relationship
 from sqlalchemy.sql.schema import ForeignKey
 
+from enum import Enum
+
 Base = declarative_base()
+
+
+class UserRoleEnum(str, Enum):
+    ADMIN = "administrator"
+    MOD = "moderator"
+    USER = "user"
+
 
 picture_m2m_tag = Table(
     "picture_m2m_tag",
@@ -23,7 +32,7 @@ class User(Base):
     password = Column(String(255), nullable=False)
     created_at = Column("crated_at", DateTime, default=func.now())
     confirmed = Column(Boolean, default=False)
-    role = Column(String(255), nullable=False, default="user")
+    role = Column(String(255), nullable=False, default=UserRoleEnum.USER)
     refresh_token = Column(String(255), nullable=True)
     is_banned = Column(Boolean, default=False)
     # pictures = relationship("Picture", back_populates="user")

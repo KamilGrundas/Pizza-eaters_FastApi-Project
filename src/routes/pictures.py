@@ -4,7 +4,7 @@ import cloudinary.uploader
 import cloudinary.api
 from sqlalchemy.orm import Session
 from src.database.db import get_db
-from src.database.models import Picture, Tag
+from src.database.models import Picture, Tag, User
 
 import qrcode
 from src.routes import comments
@@ -23,6 +23,8 @@ from src.services import pictures as pictures_service
 from src.repository import pictures as pictures_repo
 from src.repository import comments as comments_repo
 from src.repository import tags as tags_repo
+
+from src.services import auth_new as auth_service
 
 from src.services.exceptions import (
     TAG_IS_ALREADY_ASSIGNED_TO_PICTURE,
@@ -50,6 +52,7 @@ async def upload_image_mod(
     description: str = None,
     public_id: str = None,
     db: Session = Depends(get_db),
+    user: User = Depends(auth_service.get_current_user),
 ) -> PictureResponse:
     transformation = pictures_service.make_transformation(
         color_mod=color_mod, width=width, height=height, angle=angle
@@ -65,7 +68,7 @@ async def upload_image_mod(
         raise HTTPException(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
     picture = await pictures_repo.add_picture(
-        url=file_url, public_id=public_id, description=description, db=db
+        url=file_url, public_id=public_id, description=description, db=db, author_id=user.id
     )
     return picture
 
@@ -95,10 +98,11 @@ async def edit_description(
     picture_id: int,
     new_description: str,
     db: Session = Depends(get_db),
+    user: User = Depends(auth_service.get_current_user),
 ):
 
     database_result = await pictures_repo.edit_picture_description(
-        picture_id=picture_id, db=db, new_description=new_description
+        picture_id=picture_id, db=db, new_description=new_description, author_id=user.id
     )
     raise_404_exception_if_one_should(database_result, "Picture")
 
@@ -106,18 +110,18 @@ async def edit_description(
 
 
 @router.delete("/{picture_id}", response_model=PictureResponse)
-async def delete_file(picture_id: int, db: Session = Depends(get_db)):
+async def delete_file(picture_id: int, db: Session = Depends(get_db), user: User = Depends(auth_service.get_current_user),):
 
     picture = await pictures_repo.get_picture(picture_id=picture_id, db=db)
     raise_404_exception_if_one_should(picture, "Picture")
     public_id = picture.public_id
     cloudinary_result = await pictures_service.delete_file(public_id)
-    database_result = await pictures_repo.delete_picture(picture_id=picture_id, db=db)
+    database_result = await pictures_repo.delete_picture(picture_id=picture_id, db=db, author_id=user.id)
 
     return database_result
 
 
-@router.put("/{picture_id}/add_tag")  # to zmieniam
+@router.put("/{picture_id}/add_tag") 
 async def edit_description(picture_id: int, tag_id: int, db: Session = Depends(get_db)):
 
     check_if_picture_exists(picture_id=picture_id, db=db)
@@ -146,7 +150,7 @@ async def edit_description(picture_id: int, tag_id: int, db: Session = Depends(g
     return "ok"
 
 
-@router.put("/{picture_id}/delete_tag")  # to zmieniam
+@router.put("/{picture_id}/delete_tag") 
 async def edit_description(picture_id: int, tag_id: int, db: Session = Depends(get_db)):
 
     check_if_picture_exists(picture_id=picture_id, db=db)
