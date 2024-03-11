@@ -4,10 +4,10 @@ import cloudinary.api
 from src.conf.config import settings
 
 cloudinary.config(
-                cloud_name = settings.cloud_name,
-                api_key = settings.api_key,
-                api_secret = settings.api_secret
-                )
+    cloud_name=settings.cloud_name,
+    api_key=settings.api_key,
+    api_secret=settings.api_secret,
+)
 
 
 def get_url_and_public_id(upload_result: dict) -> dict:
@@ -79,3 +79,4 @@ async def apply_effects(file, public_id, transformations) -> dict:
         file, public_id=public_id, transformation=transformations
     )
     return get_url_and_public_id(upload_result)
+#

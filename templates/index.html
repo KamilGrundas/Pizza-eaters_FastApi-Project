@@ -4,10 +4,9 @@
 
 <div class="container">
 	{% for picture in context["pictures"] %}
-
     <div class="image-box">
         <a href="picture-detail/{{picture.id}}"><img src="{{ picture.url }}" alt=""></a>
-        <div>{{description}}</div>
+        <div>Posted by {{picture.username}}</div>
     </div>
 
 	{% endfor %}
