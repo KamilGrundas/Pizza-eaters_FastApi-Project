@@ -6,7 +6,7 @@ from src.database.models import Tag, Picture
 from src.schemas import TagModel
 
 
-async def get_tags(skip: int, limit: int, db: Session) -> List[Tag]:
+async def get_tags(skip: int, limit: int, db: Session) -> list[Tag] | None:
     return db.query(Tag).offset(skip).limit(limit).all()
 
 
@@ -55,7 +55,7 @@ async def remove_tag(tag_id: int, db: Session) -> Tag | None:
         db.commit()
     return tag
 
+async def get_picture_tags(picture_id: int, db: Session) -> list[Tag] | None:
+    picture = db.query(Picture).filter(Picture.id == picture_id).first()
+    return picture.tags
 
-async def get_picture_tags(picture_id: int, db: Session) -> List[Tag]:
-    tags = db.query(Picture).filter(Picture.id == picture_id).first().tags
-    return tags
