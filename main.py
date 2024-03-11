@@ -194,6 +194,5 @@ async def upload_picture_form(
     return templates.TemplateResponse("edit_comment.html", {"request": request, "context": context})
     
 
-
 if __name__ == "__main__":
     uvicorn.run(app, host="localhost", port=8000)
