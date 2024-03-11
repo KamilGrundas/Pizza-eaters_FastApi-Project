@@ -1,7 +1,8 @@
-from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status, Query, Form
+from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status, Query
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+from qrcode.main import QRCode
 from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.database.models import Picture, Tag, User
@@ -33,8 +34,7 @@ from src.services.exceptions import (
     TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
 )
 
-
-from typing import List, Optional
+from typing import List
 
 
 router = APIRouter(prefix="/pictures", tags=["pictures"])
@@ -44,18 +44,23 @@ router.include_router(comments.router)
 @router.post("/upload_picture/", response_model=PictureResponse)
 async def upload_image_mod(
     file: UploadFile = File(...),
-    description: Optional[str] = Form(None),
-    color_mod: Optional[str] = Form(None),
-    width: Optional[int] = Form(None),
-    height: Optional[int] = Form(None),
-    # angle: Optional[int] = Form(None),
-    public_id: Optional[str] = Form(None),
-    tags: Optional[str] = Form(None),
+    color_mod: str | None = Query(
+        default=None, description="e.g.: sepia, blackwhite, negate, blur grayscale"
+    ),
+     crop: str | None = Query(
+            default="fill", description="e.g.: fill, fit, scale"
+     ),
+     
+    width: int | None = None,
+    height: int | None = None,
+    radius: int | None = None,
+    description: str = None,
+    public_id: str = None,
     db: Session = Depends(get_db),
     user: User = Depends(auth_service.get_current_user),
 ) -> PictureResponse:
     transformation = pictures_service.make_transformation(
-        color_mod=color_mod, width=width, height=height # angle=angle
+        color_mod=color_mod, width=width, height=height, crop=crop, radius=radius
     )
     cloudinary_result = await pictures_service.apply_effects(
         file.file, public_id, transformation
@@ -67,7 +72,6 @@ async def upload_image_mod(
     except:
         raise HTTPException(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
-
     picture = await pictures_repo.add_picture(
         url=file_url,
         public_id=public_id,
@@ -75,12 +79,6 @@ async def upload_image_mod(
         db=db,
         author_id=user.id,
     )
-    if tags:
-
-        for tag in tags.split(" "):
-            new_tag = await tags_repo.get_tag_by_name_or_create(tag, db)
-            await pictures_repo.add_tag(picture.id,new_tag.id,db)
-            
     return picture
 
 
@@ -217,91 +215,3 @@ async def get_qr_code(qr_code_id: int, db: Session = Depends(get_db)):
     if not qr_code:
         raise HTTPException(status_code=404, detail="QR code not found")
     return qr_code.url
-
-
-# #
-
-
-# def get_download_link(public_id):
-#     try:
-#         download_url = cloudinary.utils.cloudinary_url(public_id)[0]
-#         return {"download_url": download_url}
-#     except Exception as e:
-#         return {"error": f"Error while generating download URL: {e}"}
-
-
-# @router.get("/download_picture/{public_id}")
-# async def download_file(public_id: str):
-#     return get_download_link(public_id)
-
-
-# # przeniesiona do services
-# def apply_effect(file, public_id, effect):
-#     try:
-#         upload_result = cloudinary.uploader.upload(
-#             file, public_id=public_id, transformation={"effect": effect}
-#         )
-#         return {"file_url": upload_result["secure_url"]}
-#     except Exception as e:
-#         return {"error": f"Error while applying effect: {e}"}
-
-
-# # @router.get("/get_all_images/")
-# async def get_images():
-#     return get_all_image_urls()
-
-
-# # @router.put("/edit_picture/sepia/{public_id}")
-# async def edit_image_sepia(public_id: str, file: UploadFile = File(...)):
-#     return apply_effect(file.file, public_id, "sepia")
-
-
-# # @router.put("/edit_picture/grayscale/{public_id}")
-# async def edit_image_grayscale(public_id: str, file: UploadFile = File(...)):
-#     return apply_effect(file.file, public_id, "blackwhite")
-
-
-# # @router.put("/edit_picture/negative/{public_id}")
-# async def edit_image_negative(public_id: str, file: UploadFile = File(...)):
-#     return apply_effect(file.file, public_id, "negate")
-
-
-# # @router.put("/edit_picture/resize/{public_id}")
-# async def edit_image_resize(
-#     public_id: str, file: UploadFile = File(...), width: int = 100, height: int = 100
-# ):
-#     transformation = {"width": width, "height": height, "crop": "fill"}
-#     return apply_effect(file.file, public_id, transformation)
-
-
-# # @router.put("/edit_picture/rotate/{public_id}")
-# async def edit_image_rotate(
-#     public_id: str, file: UploadFile = File(...), angle: int = 90
-# ):
-#     transformation = {"angle": angle}
-#     return apply_effect(file.file, public_id, transformation)
-
-
-# def get_image_url(public_id):
-#     try:
-#         return {
-#             "image_url": f"https://res.cloudinary.com/{cloud_name}/image/upload/{public_id}"
-#         }
-#     except Exception as e:
-#         raise HTTPException(
-#             status_code=404, detail=f"Error while getting image URL: {e}"
-#         )
-
-
-# # @router.get("/get_image/{public_id}")
-# async def get_image(public_id: str, db: Session = Depends(get_db)):
-#     return get_image_url(public_id)
-
-
-# def get_all_image_urls():
-#     try:
-#         result = cloudinary.api.resources(type="upload")
-#         images = result.get("resources", [])
-#         return [image["secure_url"] for image in images]
-#     except Exception as e:
-#         return {"error": f"Error while getting image URLs: {e}"}
