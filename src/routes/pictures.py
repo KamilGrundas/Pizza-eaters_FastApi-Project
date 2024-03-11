@@ -48,14 +48,14 @@ async def upload_image_mod(
     color_mod: Optional[str] = Form(None),
     width: Optional[int] = Form(None),
     height: Optional[int] = Form(None),
-    # angle: Optional[int] = Form(None),
+    angle: Optional[int] = Form(None),
     public_id: Optional[str] = Form(None),
     tags: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     user: User = Depends(auth_service.get_current_user),
 ) -> PictureResponse:
     transformation = pictures_service.make_transformation(
-        color_mod=color_mod, width=width, height=height # angle=angle
+        color_mod=color_mod, width=width, height=height, angle=angle
     )
     cloudinary_result = await pictures_service.apply_effects(
         file.file, public_id, transformation

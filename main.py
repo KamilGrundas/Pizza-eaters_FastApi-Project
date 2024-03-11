@@ -22,6 +22,7 @@ from src.services.auth_new import (
 )
 from fastapi.security import OAuth2PasswordRequestForm
 from src.repository.users_new import get_user_by_email, update_token, get_user_by_id
+from src.repository.comments import get_comment
 from src.services.cookie import AuthTokenMiddleware
 import asyncio
 
@@ -174,6 +175,23 @@ async def upload_picture_form(request: Request, current_user: Optional[User] = D
         "user": current_user,  # Przekazujesz użytkownika do kontekstu
     }
     return templates.TemplateResponse("upload_picture.html", {"request": request, "context": context})
+
+@app.get("/edit-comment/{picture_id}/{picture_comment_id}", response_class=HTMLResponse,)
+async def upload_picture_form(
+    request: Request,
+    picture_id: int,
+    picture_comment_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(
+        get_logged_user
+    ), 
+):
+    comment = await get_comment(db,picture_id,picture_comment_id,current_user.id)
+    context = {
+        "user": current_user,
+        "comment" : comment
+    }
+    return templates.TemplateResponse("edit_comment.html", {"request": request, "context": context})
     
 
 
