@@ -1,8 +1,7 @@
-from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status, Query
+from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status, Query, Form
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-from qrcode.main import QRCode
 from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.database.models import Picture, Tag, User
@@ -19,7 +18,7 @@ from src.services.exceptions import (
     check_if_tag_exists,
     check_if_comment_exists,
 )
-from src.services import old_pictures as pictures_service
+from src.services import pictures as pictures_service
 
 from src.repository import pictures as pictures_repo
 from src.repository import comments as comments_repo
@@ -34,7 +33,8 @@ from src.services.exceptions import (
     TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
 )
 
-from typing import List
+
+from typing import List, Optional
 
 
 router = APIRouter(prefix="/pictures", tags=["pictures"])
@@ -44,23 +44,18 @@ router.include_router(comments.router)
 @router.post("/upload_picture/", response_model=PictureResponse)
 async def upload_image_mod(
     file: UploadFile = File(...),
-    color_mod: str | None = Query(
-        default=None, description="e.g.: sepia, blackwhite, negate, blur, grayscale"
-    ),
-    crop: str | None = Query(
-            default="fill", description="e.g.: fill, fit, scale"
-     ),
-
-    width: int | None = None,
-    height: int | None = None,
-    radius: int | None = None,
-    description: str = None,
-    public_id: str = None,
+    description: Optional[str] = Form(None),
+    color_mod: Optional[str] = Form(None),
+    width: Optional[int] = Form(None),
+    height: Optional[int] = Form(None),
+    # angle: Optional[int] = Form(None),
+    public_id: Optional[str] = Form(None),
+    tags: Optional[str] = Form(None),
     db: Session = Depends(get_db),
     user: User = Depends(auth_service.get_current_user),
 ) -> PictureResponse:
     transformation = pictures_service.make_transformation(
-        color_mod=color_mod, width=width, height=height, crop=crop, radius=radius
+        color_mod=color_mod, width=width, height=height # angle=angle
     )
     cloudinary_result = await pictures_service.apply_effects(
         file.file, public_id, transformation
@@ -72,6 +67,7 @@ async def upload_image_mod(
     except:
         raise HTTPException(status_code=status.HTTP_424_FAILED_DEPENDENCY)
 
+
     picture = await pictures_repo.add_picture(
         url=file_url,
         public_id=public_id,
@@ -79,6 +75,12 @@ async def upload_image_mod(
         db=db,
         author_id=user.id,
     )
+    if tags:
+
+        for tag in tags.split(" "):
+            new_tag = await tags_repo.get_tag_by_name_or_create(tag, db)
+            await pictures_repo.add_tag(picture.id,new_tag.id,db)
+            
     return picture
 
 
