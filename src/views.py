@@ -3,6 +3,7 @@ from fastapi.security import OAuth2PasswordRequestForm
 from src.repository.users_new import get_user_by_email, update_token, get_user_by_id
 from src.repository.comments import get_comment
 from src.services.cookie import AuthTokenMiddleware
+from src.routes import comments
 import asyncio
 from src.services.auth_new import (
     create_access_token,
