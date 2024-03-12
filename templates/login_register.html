@@ -2,40 +2,17 @@
 
 {% block content %}
 
-<script>
-    async function signup() {
-        const formData = new FormData(document.getElementById('signupForm'));
-        const formDataJson = {};
-        formData.forEach((value, key) => {
-            formDataJson[key] = value;
-        });
-        const response = await fetch('/api/auth/signup', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json'
-            },
-            body: JSON.stringify(formDataJson)
-        });
-        const data = await response.json();
-        console.log(data);
-        if (response.ok) {
-        	alert('User successfully created. Check your email for confirmation.');
-        	window.location.href = '/';
-    	} else {
-        // Handle errors or display appropriate messages
-        alert('Failed to sign up. Please try again later.');
-    	}
-	}
 
 
-</script>
+
+
 <div class="login-wrap">
 	<div class="login-html">
 		<input id="tab-1" type="radio" name="tab" class="sign-in" checked><label for="tab-1" class="tab">Sign In</label>
 		<input id="tab-2" type="radio" name="tab" class="sign-up"><label for="tab-2" class="tab">Sign Up</label>
 		<div class="login-form">
 			<div class="sign-in-htm">
-				<form action="/login" method="post">
+				<form id="loginForm"  method="post" action="/login">
 					<div class="group">
 						<label for="user" class="label">Email</label>
 						<input id="user" name="username" type="text" class="input">
@@ -80,6 +57,49 @@
 	</div>
 </div>
 
+<script>
+    async function signup() {
+        const formData = new FormData(document.getElementById('signupForm'));
+        const formDataJson = {};
+        formData.forEach((value, key) => {
+            formDataJson[key] = value;
+        });
+        const response = await fetch('/api/auth/signup', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(formDataJson)
+        });
+        const data = await response.json();
+        console.log(data);
+        if (response.ok) {
+        	alert('User successfully created. Check your email for confirmation.');
+        	window.location.href = '/';
+    	} else {
+        // Handle errors or display appropriate messages
+        alert('Failed to sign up. Please try again later.');
+    	}
+	}
 
+	document.getElementById('loginForm').addEventListener('submit', async function(event) {
+            event.preventDefault(); // Prevent the default form submission
+            const form = event.target;
+            const formData = new FormData(form);
+
+            const response = await fetch(form.action, {
+                method: 'POST',
+                body: formData
+            });
+
+            if (response.ok) {
+                // Assuming your server redirects upon successful login or you can manually redirect
+                window.location.href = '/'; // Redirect to home or dashboard
+            } else {
+                // Handle login failure
+                alert('Login failed. Please check your username and password and try again.');
+            }
+        });
+</script>
 
 {% endblock %}

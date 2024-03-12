@@ -28,9 +28,9 @@
                 </a>
             </li>
             <li class="nav-item active">
-                <a class="nav-link " href="/logout">
+                <a class="nav-link" id="logoutLink" style="cursor:pointer;">
                     <p>Logout</p>
-                </a>
+                </a>                
             </li>
             {% else %}
             <li class="nav-item active">
@@ -42,3 +42,28 @@
         </ul>
     </div>
 </nav>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const logoutLink = document.getElementById('logoutLink');
+        logoutLink.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default anchor tag behavior
+            fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // Include cookies with the request
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/'; // Redirect to the home page on successful logout
+                } else {
+                    alert('Logout failed. Please try again later.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    </script>
+    

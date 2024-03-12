@@ -77,9 +77,6 @@ async def login(
         secure=True,
     )
 
-    # Przekierowanie po pomyślnym logowaniu
-    return {"message": "Logged in"}
-
 
 @router.get("/", response_class=HTMLResponse)
 async def get_home(
@@ -143,12 +140,11 @@ async def login_form(request: Request, current_user: Optional[User] = Depends(ge
         return RedirectResponse("/")
     return templates.TemplateResponse("login_register.html", {"request": request, "context": context})
 
-@router.get("/logout")
+@router.post("/logout")
 async def logout(response: Response,):
 
     response.delete_cookie("access_token",)
     response.delete_cookie("refresh_token" )
-    return {"message": "Logged out"}
 
 
 @router.get("/upload-picture", response_class=HTMLResponse,)
