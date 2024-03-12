@@ -54,20 +54,28 @@ async def delete_file(public_id: str) -> dict:
         return {"error": f"Wystąpił błąd podczas usuwania zdjęcia: {e}"}
 
 
-def make_transformation(color_mod, width, height, angle):
+def make_transformation(color_mod, width, height, angle, crop, radius):
 
     transformations = []
 
-    if width != None and height != None:
-        transformations.append({"width": width, "height": height, "crop": "fill"})
+    if width != None and height != None  and crop != None:
+        if crop in ["fit", "scale", "fill"]:
+            transformations.append({"width": width, "height": height, "crop": crop})
+        else:
+            transformations.append({"width": width, "height": height, "crop": "fill"})
     if angle != None:
         transformations.append({"angle": angle})
     if color_mod in [
         "sepia",
         "blackwhite",
         "negate",
+        "grayscale",
+        "blur"
     ]:
-        transformations.append({"effect": color_mod})
+        if color_mod != "blur":
+            transformations.append({"effect": color_mod})
+        elif color_mod == "blur":
+            transformations.append({"effect": f"blur:{radius}"})
 
     print(transformations)
     return transformations

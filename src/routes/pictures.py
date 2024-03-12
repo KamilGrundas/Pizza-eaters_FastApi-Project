@@ -2,6 +2,7 @@ from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status,
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
+from qrcode.main import QRCode
 from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.database.models import Picture, Tag, User
@@ -45,9 +46,11 @@ router.include_router(comments.router)
 async def upload_image_mod(
     file: UploadFile = File(...),
     description: Optional[str] = Form(None),
+    radius: Optional[int] = Form(None),
     color_mod: Optional[str] = Form(None),
     width: Optional[int] = Form(None),
     height: Optional[int] = Form(None),
+    crop: Optional[str] = Form(None),
     angle: Optional[int] = Form(None),
     public_id: Optional[str] = Form(None),
     tags: Optional[str] = Form(None),
@@ -55,7 +58,7 @@ async def upload_image_mod(
     user: User = Depends(auth_service.get_current_user),
 ) -> PictureResponse:
     transformation = pictures_service.make_transformation(
-        color_mod=color_mod, width=width, height=height, angle=angle
+        color_mod=color_mod, width=width, height=height, angle=angle, crop=crop, radius=radius
     )
     cloudinary_result = await pictures_service.apply_effects(
         file.file, public_id, transformation
