@@ -12,7 +12,7 @@ from src.services.auth_new import (
 )
 from typing import Optional
 from sqlalchemy.orm import Session
-from fastapi import FastAPI, Form
+from fastapi import FastAPI, Form, Query
 from fastapi import Request, APIRouter, HTTPException, Response
 from fastapi.templating import Jinja2Templates
 from fastapi.responses import HTMLResponse, RedirectResponse
@@ -78,26 +78,26 @@ async def login(
     )
 
 
-@router.get("/", response_class=HTMLResponse)
-async def get_home(
-    request: Request,
-    db: Session = Depends(get_db),
-    current_user: Optional[User] = Depends(get_logged_user),
-):
-    pictures = await pictures_repo.get_pictures(db=db)
-    users_data = await asyncio.gather(*[get_user_by_id(picture.user_id, db) for picture in pictures])
+# @router.get("/", response_class=HTMLResponse)
+# async def get_home(
+#     request: Request,
+#     db: Session = Depends(get_db),
+#     current_user: Optional[User] = Depends(get_logged_user),
+# ):
+#     pictures = await pictures_repo.get_pictures(db=db)
+#     users_data = await asyncio.gather(*[get_user_by_id(picture.user_id, db) for picture in pictures])
     
-    users_dict = {user.id: user for user in users_data}
+#     users_dict = {user.id: user for user in users_data}
     
-    for picture in pictures:
-        user = users_dict.get(picture.user_id)
-        if user:
-            picture.username = user.username
-        else:
-            picture.username = "Unknown"
+#     for picture in pictures:
+#         user = users_dict.get(picture.user_id)
+#         if user:
+#             picture.username = user.username
+#         else:
+#             picture.username = "Unknown"
 
-    context = {"pictures": pictures, "user": current_user}
-    return templates.TemplateResponse("index.html", {"request": request, "context": context})
+#     context = {"pictures": pictures, "user": current_user}
+#     return templates.TemplateResponse("index.html", {"request": request, "context": context})
 
 
 @router.get("/picture-detail/{picture_id}", response_class=HTMLResponse)
@@ -170,3 +170,32 @@ async def upload_picture_form(
         "comment" : comment
     }
     return templates.TemplateResponse("edit_comment.html", {"request": request, "context": context})
+
+
+@router.get("/", response_class=HTMLResponse,)
+async def search_pictures(
+    request: Request,
+    query: str = Query(None),
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(
+        get_logged_user
+    ), 
+):
+    if query:
+        pictures = await pictures_repo.get_pictures_by_tags(query,db=db)
+    else:
+        pictures = await pictures_repo.get_pictures(db=db)
+
+    users_data = await asyncio.gather(*[get_user_by_id(picture.user_id, db) for picture in pictures])
+    
+    users_dict = {user.id: user for user in users_data}
+    
+    for picture in pictures:
+        user = users_dict.get(picture.user_id)
+        if user:
+            picture.username = user.username
+        else:
+            picture.username = "Unknown"
+
+    context = {"pictures": pictures, "user": current_user}
+    return templates.TemplateResponse("index.html", {"request": request, "context": context})
