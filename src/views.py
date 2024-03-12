@@ -23,6 +23,7 @@ from src.database.db import get_db
 from src.services.auth_new import get_logged_user
 from fastapi import Depends, status
 from src.database.models import User
+from datetime import datetime
 
 
 app = FastAPI()
@@ -35,6 +36,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
+def format_datetime(value, format='%d.%m.%Y - %H:%M:%S'):
+    """Format a datetime to a different format."""
+    if value is None:
+        return ""
+    return value.strftime(format)
+
+templates.env.filters['datetime'] = format_datetime
 
 @router.post("/login")
 async def login(
@@ -95,7 +103,6 @@ async def get_home(
     return templates.TemplateResponse("index.html", {"request": request, "context": context})
 
 
-@router.post("/picture-detail/{picture_id}", status_code=status.HTTP_201_CREATED)
 @router.get("/picture-detail/{picture_id}", response_class=HTMLResponse)
 async def get_picture(
     request: Request,
@@ -119,18 +126,9 @@ async def get_picture(
             comment.username = "Unknown"
     context = {
         "picture": picture,
-        "user": current_user,  # Przekazujesz użytkownika do kontekstu
+        "user": current_user,
     }
-    if request.method == "POST" and comment_text:
-        # Przy dodawaniu komentarza, sprawdzasz, czy użytkownik jest zalogowany
-        if current_user:
-            await comments.add_new_comment(
-                picture_id, CommentBase(text=comment_text), db, current_user
-            )
-        else:
-            raise HTTPException(
-                status_code=401, detail="You have to log in to comment."
-            )
+
     return templates.TemplateResponse(
         "picture.html", {"request": request, "context": context}
     )

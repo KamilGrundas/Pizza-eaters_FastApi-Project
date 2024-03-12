@@ -29,7 +29,7 @@ document.getElementById('editCommentForm').addEventListener('submit', function(e
     var commentText = document.getElementById('text').value;
 
     // Fetch API to send a PUT request
-    fetch('/wizards/pictures/{{ context['comment'].picture_id }}/comments/{{ context['comment'].picture_comment_id }}', {
+    fetch('/wizards/pictures/{{ context["comment"].picture_id }}/comments/{{ context["comment"].picture_comment_id }}', {
         method: 'PUT',
         headers: {
             'Content-Type': 'application/json',

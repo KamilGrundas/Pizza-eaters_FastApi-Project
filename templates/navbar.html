@@ -22,7 +22,9 @@
             </li>
             <li class="nav-item active">
                 <a class="nav-link " href="/profile">
-                    <p>Welcome, {{ context.user.username }}</p>
+                    <p>Welcome,{% if context.user.role == "administrator" %}
+                        <span style="background-color: red; border-radius: 5px; padding: 1px 4px; color: white;">ADMIN</span>
+                        {% endif %}  {{ context.user.username }}</p>
                 </a>
             </li>
             <li class="nav-item active">

@@ -85,7 +85,7 @@ document.getElementById('uploadForm').addEventListener('submit', function(e) {
     })
     .catch(error => {
         console.error('Error:', error);
-        // Handle or display the error
+        alert('Failed to send picture. Try again.');
         // Could update the UI to show the error
     });
 });
