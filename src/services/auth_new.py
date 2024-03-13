@@ -103,7 +103,7 @@ async def get_current_user(request: Request, db: Session = Depends(get_db)):
         headers={"WWW-Authenticate": "Bearer"},
     )
     token_cookie = request.cookies.get("access_token")
-    print(token_cookie)
+
     if not token_cookie:
         raise credentials_exception
     try:

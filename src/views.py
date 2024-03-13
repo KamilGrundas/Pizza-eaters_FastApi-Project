@@ -32,7 +32,6 @@ router = APIRouter(tags=["views"])
 
 
 app.add_middleware(AuthTokenMiddleware)
-app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
