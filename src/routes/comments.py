@@ -10,6 +10,7 @@ import src.repository.comments as comments_repo
 
 from src.services.exceptions import (
     raise_404_exception_if_one_should,
+    check_if_picture_exists,
 )
 
 # import src.services.auth as auth_service
@@ -17,9 +18,7 @@ from src.services.exceptions import (
 from src.services import auth_new as auth_service
 
 
-router = APIRouter(
-    prefix="/{picture_id}/comments", tags=["comments"]
-)  # ??? do komentarzy chyba trzeba uderzać z poziomu zdjęcia picture/{picture_id}/
+router = APIRouter(prefix="/{picture_id}/comments", tags=["comments"])
 
 
 @router.post("/", response_model=CommentResponse, status_code=status.HTTP_201_CREATED)
@@ -29,14 +28,15 @@ async def add_new_comment(
     db: Session = Depends(get_db),
     user: User = Depends(auth_service.get_current_user),
 ) -> Comment:
+    check_if_picture_exists(picture_id=picture_id, db=db)
     new_comment = await comments_repo.add_comment(body, db, picture_id, user.id)
     return new_comment
 
 
 @router.get("/", response_model=List[CommentResponse])
 async def get_comments(picture_id: int, db: Session = Depends(get_db)) -> List[Comment]:
-    # to może zrobić każdy
     comments = await comments_repo.get_comments(db, picture_id)
+    raise_404_exception_if_one_should(comments, "Comments")
 
     return comments
 
@@ -88,14 +88,3 @@ async def delete_comment(
     )
     raise_404_exception_if_one_should(deleted_comment, "Comment")
     return deleted_comment
-
-
-# def no_picture_exception(func):
-#     async def inner(picture_id: int, db: Session = Depends(get_db)):
-#         picture = db.query(Picture).filter(Picture.id == picture_id).first()
-#         if bool(picture):
-#             result = await func(picture_id, db)
-#             return result
-#         raise HTTPException(status_code=status.HTTP_404_NOT_FOUND)
-
-#     return inner

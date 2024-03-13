@@ -168,3 +168,5 @@ alembic.txt
 *.jpg
 fake_pictures.py
 fake_auth.py
+
+/migrations
