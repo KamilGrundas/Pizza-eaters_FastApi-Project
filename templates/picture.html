@@ -15,8 +15,11 @@
             {{tag.name}}
             {% endfor %}
         </p>
-        
+        <div class="text-center mt-4">
+            <button onclick="generateQRCode()" class="btn btn-primary">Generate QR Code</button>
+        </div>
     </div>
+
 
     <div class="mt-5">
         <div class="d-flex justify-content-center row">
@@ -85,5 +88,25 @@
         });
     });
     </script>
+
+<script>
+    function generateQRCode() {
+        fetch('/wizards/pictures/generate_qr_code/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ picture_url: '{{ context["picture"].url }}' }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            window.location.href = `/wizards/pictures/qr_code/{{ context['picture'].id }}`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to generate QR code.');
+        });
+    }
+</script>
 
 {% endblock %}

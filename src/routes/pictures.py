@@ -1,8 +1,10 @@
-from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status, Query, Form
+from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status, Query, Form, Request
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 import cloudinary
 import cloudinary.uploader
 import cloudinary.api
-from qrcode.main import QRCode
+import io
 from sqlalchemy.orm import Session
 from src.database.db import get_db
 from src.database.models import Picture, Tag, User
@@ -40,6 +42,7 @@ from typing import List, Optional
 
 router = APIRouter(prefix="/pictures", tags=["pictures"])
 router.include_router(comments.router)
+templates = Jinja2Templates(directory="templates")
 
 
 @router.post("/upload_picture/", response_model=PictureResponse)
@@ -192,34 +195,47 @@ async def edit_description(picture_id: int, tag_id: int, db: Session = Depends(g
 async def generate_qr_code(
     qr_code_request: QRCodeRequest, db: Session = Depends(get_db)
 ):
-    # Generate QR code
-    qr = qrcode.QRCode(
-        version=1,
-        error_correction=qrcode.constants.ERROR_CORRECT_L,
-        box_size=10,
-        border=2,
-    )
-    qr.add_data(qr_code_request.transformed_photo_url)
-    qr.make(fit=True)
-    qr_img = qr.make_image(fill_color="black", back_color="white")
+    try:
+        picture = db.query(Picture).filter(Picture.url == qr_code_request.picture_url).first()
+        if not picture:
+            raise HTTPException(status_code=404, detail="Picture not found")
 
-    qr_img_path = f"qr_codes/{qr_code_request.transformed_photo_url.replace('/', '_').replace(':', '_')}.png"
-    qr_img.save(qr_img_path)
+        if not picture.qr_url:
+            qr = qrcode.QRCode(
+                version=1,
+                error_correction=qrcode.constants.ERROR_CORRECT_L,
+                box_size=10,
+                border=2,
+            )
+            qr.add_data(picture.url)
+            qr.make(fit=True)
+            qr_img = qr.make_image(fill_color="black", back_color="white")
 
-    # Save QR code URL to the database
-    qr_code = QRCode(url=qr_img_path)
-    db.add(qr_code)
-    db.commit()
+            qr_bytes = io.BytesIO()
+            qr_img.save(qr_bytes)
+            qr_bytes.seek(0)
 
-    return {"qr_code_url": qr_img_path}
+            qr_upload = cloudinary.uploader.upload(qr_bytes, folder='qr_codes')
+
+            picture.qr_url = qr_upload['secure_url']
+            db.commit()
+
+        return {"picture_id": picture.id}
+
+    except Exception as e:
+        raise HTTPException(status_code=500, detail=str(e))
 
 
-@router.get("/qr_code/{qr_code_id}")
-async def get_qr_code(qr_code_id: int, db: Session = Depends(get_db)):
-    qr_code = db.query(QRCode).filter(QRCode.id == qr_code_id).first()
-    if not qr_code:
-        raise HTTPException(status_code=404, detail="QR code not found")
-    return qr_code.url
+@router.get("/qr_code/{picture_id}", response_class=HTMLResponse)
+async def get_qr_code(request: Request, picture_id: int, db: Session = Depends(get_db)):
+    # Retrieve the picture from the database
+    picture = db.query(Picture).filter(Picture.id == picture_id).first()
+    if not picture:
+        raise HTTPException(status_code=404, detail="Picture not found")
+
+    qr_code_url = picture.qr_url
+
+    return templates.TemplateResponse("qr_code.html", {"request": request, "qr_code_url": qr_code_url})
 
 
 # #

@@ -17,6 +17,7 @@ from src.services.exceptions import (
     TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
 )
 
+
 async def get_pictures_by_tags(text: str, db: Session) -> List[Picture]:
 
     pictures = db.query(Picture).join(Picture.tags).filter(Tag.name.ilike(f"%{text}%")).distinct().all()
