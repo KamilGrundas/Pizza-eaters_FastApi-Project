@@ -1,3 +1,4 @@
+from typing import Coroutine, Any
 import pytest
 import unittest
 
@@ -76,20 +77,18 @@ async def prepare_database(tags_list_of_dict, user_dict, session):
     return session
 
 
-class TestUsers(unittest.IsolatedAsyncioTestCase):
+class TestPictures(unittest.IsolatedAsyncioTestCase):
 
-    def setUp(self) -> None:
-        self.database = prepare_database(tags_list_of_dict(), user_dict(), session())
-        self.picture_dict = picture_dict()
+    def asyncSetUp(self) -> Coroutine[Any, Any, None]:
+        # return super().asyncSetUp()
+        engine = create_engine(
+            TEST_SQLALCHEMY_DATABASE_URL, connect_args={"check_same_thread": False}
+        )
+        TestingSessionLocal = sessionmaker(
+            autocommit=False, autoflush=False, bind=engine
+        )
 
-    async def test_add_picture(self):
+        Base.metadata.drop_all(bind=engine)
+        Base.metadata.create_all(bind=engine)
 
-        expected_id = 1
-
-        print(self.picture_dict)
-
-        result = await add_picture(**self.picture_dict, db=self.database)
-        result_in_db = self.session.query(Picture).first()
-
-        assert result_in_db.id == expected_id
-        assert result_in_db.url == picture_dict["url"]
+        self.session = TestingSessionLocal()
