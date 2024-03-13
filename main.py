@@ -1,6 +1,6 @@
 import uvicorn
 from fastapi import FastAPI
-from src.routes import tags,auth_new, pictures
+from src.routes import tags, auth_new, pictures
 from src import views
 
 app = FastAPI()

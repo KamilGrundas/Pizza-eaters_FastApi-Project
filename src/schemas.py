@@ -109,17 +109,8 @@ class TagResponse(TagModel):
         from_attributes = True
 
 
-class QRCodeModel(BaseModel):
-    id: int
-    url: str
-    transformed_picture_url: int
-
-    class Config:
-        from_attributes = True
-
-
 class QRCodeRequest(BaseModel):
-    transformed_photo_url: str
+    picture_url: str
 
 
 class PictureBase(BaseModel):
