@@ -42,7 +42,6 @@ from typing import List, Optional
 
 router = APIRouter(prefix="/pictures", tags=["pictures"])
 router.include_router(comments.router)
-templates = Jinja2Templates(directory="templates")
 
 
 @router.post("/upload_picture/", response_model=PictureResponse)
@@ -224,18 +223,6 @@ async def generate_qr_code(
 
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-
-@router.get("/qr_code/{picture_id}", response_class=HTMLResponse)
-async def get_qr_code(request: Request, picture_id: int, db: Session = Depends(get_db)):
-    # Retrieve the picture from the database
-    picture = db.query(Picture).filter(Picture.id == picture_id).first()
-    if not picture:
-        raise HTTPException(status_code=404, detail="Picture not found")
-
-    qr_code_url = picture.qr_url
-
-    return templates.TemplateResponse("qr_code.html", {"request": request, "qr_code_url": qr_code_url})
 
 
 # #

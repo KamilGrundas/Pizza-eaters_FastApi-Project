@@ -100,7 +100,7 @@
         })
         .then(response => response.json())
         .then(data => {
-            window.location.href = `/wizards/pictures/qr_code/{{ context['picture'].id }}`;
+            window.location.href = `/qr_code/{{ context['picture'].id }}`;
         })
         .catch(error => {
             console.error('Error:', error);

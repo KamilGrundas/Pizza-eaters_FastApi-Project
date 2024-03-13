@@ -1,0 +1,48 @@
+{% extends "base.html" %}
+
+{% block content %}
+
+<div class="container mt-5">
+    <form id="editDescriptionForm" class="form-group">
+        <label for="newDescription">Nowy opis</label>
+        <input type="text" id="newDescription" name="newDescription" class="form-control" placeholder="Wpisz nowy opis" value="{{context["picture"].description}}">
+        <button type="submit" class="btn btn-primary mt-3">Update description</button>
+    </form>
+</div>
+
+<script>
+    document.getElementById('editDescriptionForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+    
+        const newDescription = document.getElementById('newDescription').value;
+        // Przykład, jak zastąpić 'actual_picture_id' rzeczywistym ID obrazu, które musi być znane w tym kontekście
+        const pictureId = '{{context["picture"].id}}'; // Ustaw odpowiednie ID obrazu
+    
+        // Dodajemy `new_description` jako parametr zapytania w URL, zamiast umieszczania go w ciele żądania
+        fetch(`/wizards/pictures/${pictureId}?new_description=${encodeURIComponent(newDescription)}`, {
+            method: 'PUT',
+            headers: {
+                'Content-Type': 'application/json',
+                // Dodaj tutaj inne wymagane nagłówki, np. tokeny autoryzacyjne
+            }
+            // Usuwamy ciało żądania, ponieważ dane są przekazywane jako parametr zapytania
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+            window.location.href = "/picture-detail/{{ context['picture'].id }}"
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to update description. Try again.');
+        });
+    });
+    </script>
+    
+
+{% endblock %}

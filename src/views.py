@@ -77,28 +77,6 @@ async def login(
     )
 
 
-# @router.get("/", response_class=HTMLResponse)
-# async def get_home(
-#     request: Request,
-#     db: Session = Depends(get_db),
-#     current_user: Optional[User] = Depends(get_logged_user),
-# ):
-#     pictures = await pictures_repo.get_pictures(db=db)
-#     users_data = await asyncio.gather(*[get_user_by_id(picture.user_id, db) for picture in pictures])
-    
-#     users_dict = {user.id: user for user in users_data}
-    
-#     for picture in pictures:
-#         user = users_dict.get(picture.user_id)
-#         if user:
-#             picture.username = user.username
-#         else:
-#             picture.username = "Unknown"
-
-#     context = {"pictures": pictures, "user": current_user}
-#     return templates.TemplateResponse("index.html", {"request": request, "context": context})
-
-
 @router.get("/picture-detail/{picture_id}", response_class=HTMLResponse)
 async def get_picture(
     request: Request,
@@ -198,3 +176,37 @@ async def search_pictures(
 
     context = {"pictures": pictures, "user": current_user}
     return templates.TemplateResponse("index.html", {"request": request, "context": context})
+
+@router.get("/qr_code/{picture_id}", response_class=HTMLResponse)
+async def get_qr_code(
+    request: Request,
+    picture_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(
+        get_logged_user
+    ), 
+):
+
+    picture = await pictures_repo.get_picture(picture_id,db)
+
+    context = {
+        "user": current_user,
+        "picture" : picture
+    }
+    return templates.TemplateResponse("qr_code.html", {"request": request, "context": context})
+
+@router.get("/edit-picture/{picture_id}", response_class=HTMLResponse,)
+async def upload_picture_form(
+    request: Request,
+    picture_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(
+        get_logged_user
+    ), 
+):
+    picture = await pictures_repo.get_picture(picture_id,db)
+    context = {
+        "user": current_user,
+        "picture" : picture
+    }
+    return templates.TemplateResponse("edit_picture.html", {"request": request, "context": context})
