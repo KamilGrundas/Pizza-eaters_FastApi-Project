@@ -3,8 +3,8 @@
         <img src="/static/images/page_logo.svg" width="30" height="30" class="d-inline-block align-top" alt="">
         PhotoShare
     </a>
-    <form class="form-inline">
-        <input class="form-control mr-sm-2" type="search" placeholder="Search" aria-label="Search">
+    <form class="form-inline" action="/" method="get">
+        <input class="form-control mr-sm-2" type="search" name="query" placeholder="Search" aria-label="Search">
     </form>
     <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbarSupportedContent"
         aria-controls="navbarSupportedContent" aria-expanded="false" aria-label="Toggle navigation">
@@ -22,13 +22,15 @@
             </li>
             <li class="nav-item active">
                 <a class="nav-link " href="/profile">
-                    <p>Welcome, {{ context.user.username }}</p>
+                    <p>Welcome,{% if context.user.role == "administrator" %}
+                        <span style="background-color: red; border-radius: 5px; padding: 1px 4px; color: white;">ADMIN</span>
+                        {% endif %}  {{ context.user.username }}</p>
                 </a>
             </li>
             <li class="nav-item active">
-                <a class="nav-link " href="/logout">
+                <a class="nav-link" id="logoutLink" style="cursor:pointer;">
                     <p>Logout</p>
-                </a>
+                </a>                
             </li>
             {% else %}
             <li class="nav-item active">
@@ -40,3 +42,28 @@
         </ul>
     </div>
 </nav>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function() {
+        const logoutLink = document.getElementById('logoutLink');
+        logoutLink.addEventListener('click', function(event) {
+            event.preventDefault(); // Prevent the default anchor tag behavior
+            fetch('/logout', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                credentials: 'include' // Include cookies with the request
+            })
+            .then(response => {
+                if (response.ok) {
+                    window.location.href = '/'; // Redirect to the home page on successful logout
+                } else {
+                    alert('Logout failed. Please try again later.');
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+    });
+    </script>
+    

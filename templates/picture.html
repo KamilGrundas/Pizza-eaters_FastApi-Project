@@ -2,40 +2,88 @@
 
 {% block content %}
 
-<div class="container">
+<div class="container mt-5">
 
-    <div class="image-box-detail">
-        <p>Author: {{context.picture.username}}</p>
-        <img src="{{context["picture"].url}}" alt="">
-        {% if context["picture"].description %}
-        <div>{{context["picture"].description}}</div>
-        {% endif %}
+    <div class="image-box-detail text-center">
+        <p class="font-weight-bold">Author: {{ context.picture.username }}</p>
+        <img src="{{ context['picture'].url }}" alt="" class="img-fluid rounded">
+        <p class="mt-4"><strong>Description:</strong></p>
+        <p>{{ context['picture'].description or 'None' }}</p>
+        <p class="mt-2"><strong>Tags:</strong></p>
+        <p>
+            {% for tag in context['picture'].tags %}
+            {{tag.name}}
+            {% endfor %}
+        </p>
+        
     </div>
-    <div class="container mt-5">
-        <div class="d-flex justify-content-center row w-75">
-            <div class="col-md-8">
-                <div class="d-flex flex-column comment-section">
-                    {% for comment in context["picture"].comments %}
-                    <div class="bg-white p-2">
-                        <div class="d-flex flex-row user-info">
-                            <div class="d-flex flex-column justify-content-start ml-2"><span class="d-block font-weight-bold name">{{comment.username}}</span><span class="date text-black-50">Shared publicly - {{comment["created_at"]}}</span></div>
+
+    <div class="mt-5">
+        <div class="d-flex justify-content-center row">
+            <div class="col-md-12">
+                <div class="comment-section">
+                    {% for comment in context['picture'].comments %}
+                    <div class="bg-white p-3 mb-2 rounded border">
+                        <div class="d-flex flex-row user-info justify-content-between">
+                            <div class="d-flex flex-column justify-content-start ml-2">
+                                <span class="d-block font-weight-bold name">{{ comment.username }}</span>
+                                <span class="date text-black-50">Shared publicly - {{ comment['created_at'] | datetime }}</span>
+                            </div>
+                            {% if context.user.username == comment.username %}
+                            <div>
+                                <!-- Replace '#' with the link to the edit comment page -->
+                                <a href="/edit-comment/{{context['picture'].id}}/{{comment.picture_comment_id}}" class="btn btn-sm btn-primary">Edit</a>
+                            </div>
+                            {% endif %}
                         </div>
-                        <div class="mt-2">
-                            <p class="comment-text">{{comment["text"]}}</p>
+                        <div class="comment-text mt-2 p-2">
+                            <p>{{ comment['text'] }}</p>
                         </div>
                     </div>
                     {% endfor %}
-                    <div class="bg-light p-2">
-                        <div class="d-flex flex-row align-items-start">
-                            <form method="POST" action="">
-                                <input type="text" name="comment_text" placeholder="Write your comment here..." class="form-control ml-1 shadow-none textarea"></input>
-                            </form>
-                        </div>
-
+                    <div class="bg-light p-3 mb-4 rounded border">
+                        <form id="CommentForm" method="POST" action="" class="d-flex flex-row align-items-start">
+                            <input id="commentText" name="comment_text" class="form-control ml-1 shadow-none" placeholder="Write your comment here..."></input>
+                        </form>
                     </div>
                 </div>
             </div>
         </div>
     </div>
 </div>
+
+<script>
+    document.getElementById('CommentForm').addEventListener('submit', function(e) {
+        e.preventDefault();
+    
+        var commentText = document.getElementById('commentText').value; // Corrected access to the input field
+    
+        // Assuming your backend is expecting a JSON with the key 'text' for the comment
+        fetch('/wizards/pictures/{{ context["picture"].id }}/comments/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+                // Include other headers as required, like authorization tokens
+            },
+            body: JSON.stringify({
+                text: commentText, // Use the retrieved comment text
+            }),
+        })
+        .then(response => {
+            if (!response.ok) {
+                throw new Error('Network response was not ok');
+            }
+            return response.json();
+        })
+        .then(data => {
+            console.log(data);
+            window.location.href = "/picture-detail/{{ context['picture'].id }}"; // Redirect or handle success
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('You need to sign in to comment.');
+        });
+    });
+    </script>
+
 {% endblock %}

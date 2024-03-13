@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+
+{% block content %}
+<div class="container mt-5 pb-5"> <!-- Added bottom padding to the container -->
+    <div class="row">
+        <div class="col-md-8 offset-md-2"> <!-- Adjusted for a wider form -->
+            <h2 class="mb-4">Edit Comment</h2>
+            <form id="editCommentForm" action="" method="post" class="needs-validation" novalidate>
+                <div class="form-group">
+                    <label for="text">Comment Text</label>
+                    <textarea class="form-control" id="text" name="text" rows="3" required>{{ context['comment'].text }}</textarea>
+                </div>
+                <button type="submit" class="btn btn-primary btn-block">Submit</button> <!-- Make the button full width -->
+            </form>
+        </div>
+    </div>
+</div>
+<!-- Bootstrap JS and dependencies -->
+<script src="https://code.jquery.com/jquery-3.3.1.slim.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.14.7/umd/popper.min.js"></script>
+<script src="https://stackpath.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
+
+<!-- JavaScript to handle the PUT request -->
+<script>
+document.getElementById('editCommentForm').addEventListener('submit', function(e) {
+    e.preventDefault();
+
+    var form = this;
+    var commentText = document.getElementById('text').value;
+
+    // Fetch API to send a PUT request
+    fetch('/wizards/pictures/{{ context["comment"].picture_id }}/comments/{{ context["comment"].picture_comment_id }}', {
+        method: 'PUT',
+        headers: {
+            'Content-Type': 'application/json',
+            // Include other headers as required, like authorization tokens
+        },
+        body: JSON.stringify({
+            text: commentText,
+            // Include other properties of CommentBase as required
+        }),
+    })
+    .then(response => {
+        if (!response.ok) {
+            throw new Error('Network response was not ok');
+        }
+        return response.json();
+    })
+    .then(data => {
+        console.log(data);
+        window.location.href = "/picture-detail/{{ context['comment'].picture_id }}";
+        // Handle success, e.g., redirect or update the UI
+    })
+    .catch(error => {
+        console.error('Error:', error);
+        // Handle errors, e.g., show a message to the user
+    });
+});
+</script>
+
+{% endblock %}

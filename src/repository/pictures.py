@@ -17,6 +17,11 @@ from src.services.exceptions import (
     TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
 )
 
+async def get_pictures_by_tags(text: str, db: Session) -> List[Picture]:
+
+    pictures = db.query(Picture).join(Picture.tags).filter(Tag.name.ilike(f"%{text}%")).distinct().all()
+    return pictures
+
 
 async def add_picture(
     url: str, public_id: str, description: str, db: Session, author_id: int
@@ -47,6 +52,7 @@ async def add_tag(picture_id: int, tag_id: int, db: Session):
 
     picture.tags.append(tag)
     db.commit()
+    db.refresh(picture)
     return 0
 
 
