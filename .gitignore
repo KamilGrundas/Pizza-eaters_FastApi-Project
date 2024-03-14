@@ -170,3 +170,4 @@ fake_pictures.py
 fake_auth.py
 
 /migrations
+test_repository_pictures_to_delete.py
