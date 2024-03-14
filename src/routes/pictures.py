@@ -1,4 +1,14 @@
-from fastapi import Depends, APIRouter, File, UploadFile, HTTPException, status, Query, Form, Request
+from fastapi import (
+    Depends,
+    APIRouter,
+    File,
+    UploadFile,
+    HTTPException,
+    status,
+    Query,
+    Form,
+    Request,
+)
 from fastapi.responses import HTMLResponse
 from fastapi.templating import Jinja2Templates
 import cloudinary
@@ -7,7 +17,7 @@ import cloudinary.api
 import io
 from sqlalchemy.orm import Session
 from src.database.db import get_db
-from src.database.models import Picture, Tag, User
+from src.database.models import Picture, Tag, User, UserRoleEnum
 
 import qrcode
 from src.routes import comments
@@ -60,7 +70,12 @@ async def upload_image_mod(
     user: User = Depends(auth_service.get_current_user),
 ) -> PictureResponse:
     transformation = pictures_service.make_transformation(
-        color_mod=color_mod, width=width, height=height, angle=angle, crop=crop, radius=radius
+        color_mod=color_mod,
+        width=width,
+        height=height,
+        angle=angle,
+        crop=crop,
+        radius=radius,
     )
     cloudinary_result = await pictures_service.apply_effects(
         file.file, public_id, transformation
@@ -71,7 +86,6 @@ async def upload_image_mod(
         public_id = cloudinary_result["public_id"]
     except:
         raise HTTPException(status_code=status.HTTP_424_FAILED_DEPENDENCY)
-
 
     picture = await pictures_repo.add_picture(
         url=file_url,
@@ -84,8 +98,8 @@ async def upload_image_mod(
 
         for tag in tags.split(" "):
             new_tag = await tags_repo.get_tag_by_name_or_create(tag, db)
-            await pictures_repo.add_tag(picture.id,new_tag.id,db)
-            
+            await pictures_repo.add_tag(picture.id, new_tag.id, db)
+
     return picture
 
 
@@ -116,11 +130,17 @@ async def edit_description(
     db: Session = Depends(get_db),
     user: User = Depends(auth_service.get_current_user),
 ):
+    picture = await pictures_repo.get_picture(picture_id=picture_id, db=db)
+    raise_404_exception_if_one_should(picture, "Picture")
+    if not user.id == picture.user_id and not user.role == UserRoleEnum.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to edit this picture",
+        )
 
     database_result = await pictures_repo.edit_picture_description(
-        picture_id=picture_id, db=db, new_description=new_description, author_id=user.id
+        picture_id=picture_id, db=db, new_description=new_description
     )
-    raise_404_exception_if_one_should(database_result, "Picture")
 
     return database_result
 
@@ -135,13 +155,14 @@ async def delete_file(
     picture = await pictures_repo.get_picture(picture_id=picture_id, db=db)
     raise_404_exception_if_one_should(picture, "Picture")
     public_id = picture.public_id
+
+    if not user.id == picture.user_id and not user.role == UserRoleEnum.ADMIN:
+        raise HTTPException(
+            status_code=status.HTTP_403_FORBIDDEN,
+            detail="You don't have permission to delete this picture",
+        )
     cloudinary_result = await pictures_service.delete_file(public_id)
-    if not user.id == picture.user_id and not user.role == "administrator":
-        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
-                            detail="You don't have permission to delete this picture")
-    database_result = await pictures_repo.delete_picture(
-        picture_id=picture_id, db=db
-    )
+    database_result = await pictures_repo.delete_picture(picture_id=picture_id, db=db)
 
     return database_result
 
@@ -198,7 +219,9 @@ async def generate_qr_code(
     qr_code_request: QRCodeRequest, db: Session = Depends(get_db)
 ):
     try:
-        picture = db.query(Picture).filter(Picture.url == qr_code_request.picture_url).first()
+        picture = (
+            db.query(Picture).filter(Picture.url == qr_code_request.picture_url).first()
+        )
         if not picture:
             raise HTTPException(status_code=404, detail="Picture not found")
 
@@ -217,9 +240,9 @@ async def generate_qr_code(
             qr_img.save(qr_bytes)
             qr_bytes.seek(0)
 
-            qr_upload = cloudinary.uploader.upload(qr_bytes, folder='qr_codes')
+            qr_upload = cloudinary.uploader.upload(qr_bytes, folder="qr_codes")
 
-            picture.qr_url = qr_upload['secure_url']
+            picture.qr_url = qr_upload["secure_url"]
             db.commit()
 
         return {"picture_id": picture.id}

@@ -20,7 +20,13 @@ from src.services.exceptions import (
 
 async def get_pictures_by_tags(text: str, db: Session) -> List[Picture]:
 
-    pictures = db.query(Picture).join(Picture.tags).filter(Tag.name.ilike(f"%{text}%")).distinct().all()
+    pictures = (
+        db.query(Picture)
+        .join(Picture.tags)
+        .filter(Tag.name.ilike(f"%{text}%"))
+        .distinct()
+        .all()
+    )
     return pictures
 
 
@@ -88,13 +94,9 @@ async def get_picture(picture_id: int, db: Session) -> Picture:
 
 
 async def edit_picture_description(
-    picture_id: int, db: Session, new_description: str, author_id: int
+    picture_id: int, db: Session, new_description: str
 ) -> Picture:
-    picture = (
-        db.query(Picture)
-        .filter(Picture.id == picture_id, Picture.user_id == author_id)
-        .first()
-    )
+    picture = db.query(Picture).filter(Picture.id == picture_id).first()
     if picture != None:
         picture.description = new_description
         db.commit()
@@ -103,11 +105,7 @@ async def edit_picture_description(
 
 
 async def delete_picture(picture_id: int, db: Session) -> Picture:
-    picture = (
-        db.query(Picture)
-        .filter(Picture.id == picture_id)
-        .first()
-    )
+    picture = db.query(Picture).filter(Picture.id == picture_id).first()
     if picture != None:
         picture.is_deleted = True
         db.commit()

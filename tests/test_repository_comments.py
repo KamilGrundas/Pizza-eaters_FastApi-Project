@@ -19,7 +19,7 @@ from src.repository.comments import (
 from src.schemas import CommentBase
 
 
-TEST_SQLALCHEMY_DATABASE_URL = "sqlite:///./test.db"
+TEST_SQLALCHEMY_DATABASE_URL = "sqlite:///./test_repo_comments.db"
 PICTURES_TO_TEST_NUM = 3
 AUTHOR_ID = 1
 ANOTHER_USER_ID = 2
