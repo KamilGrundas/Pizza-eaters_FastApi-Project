@@ -2,6 +2,16 @@
 
 {% block content %}
 
+<style>
+    p.tags span {
+        background-color: #666;
+        color: #fff;
+        padding: 10px;
+        border-radius: 5px;
+        display: inline-block;
+    }
+</style>
+
 <div class="container mt-5">
 
     <div class="image-box-detail text-center">
@@ -16,14 +26,14 @@
         <p>{{ context['picture'].description or 'None' }}</p>
         <div class="text-center mt-4">
             {% if context["user"].role == "administrator" or context["user"].id == context["picture"].user_id %}
-            <a href="/edit-picture/{{context["picture"].id}}" class="btn btn-primary">Edit description</a>
+            <a href='/edit-picture/{{context["picture"].id}}' class="btn btn-primary">Edit description</a>
             {% endif %}
 
         </div>
         <p class="mt-2"><strong>Tags:</strong></p>
-        <p>
+        <p class="tags">
             {% for tag in context['picture'].tags %}
-            {{tag.name}}
+            <span>{{ tag.name }}</span>
             {% endfor %}
         </p>
         <div class="text-center mt-4">
