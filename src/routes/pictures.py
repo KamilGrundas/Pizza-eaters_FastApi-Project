@@ -136,8 +136,11 @@ async def delete_file(
     raise_404_exception_if_one_should(picture, "Picture")
     public_id = picture.public_id
     cloudinary_result = await pictures_service.delete_file(public_id)
+    if not user.id == picture.user_id and not user.role == "administrator":
+        raise HTTPException(status_code=status.HTTP_403_FORBIDDEN,
+                            detail="You don't have permission to delete this picture")
     database_result = await pictures_repo.delete_picture(
-        picture_id=picture_id, db=db, author_id=user.id
+        picture_id=picture_id, db=db
     )
 
     return database_result

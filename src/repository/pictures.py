@@ -102,10 +102,10 @@ async def edit_picture_description(
     return picture
 
 
-async def delete_picture(picture_id: int, db: Session, author_id: int) -> Picture:
+async def delete_picture(picture_id: int, db: Session) -> Picture:
     picture = (
         db.query(Picture)
-        .filter(Picture.id == picture_id, Picture.user_id == author_id)
+        .filter(Picture.id == picture_id)
         .first()
     )
     if picture != None:
