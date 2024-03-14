@@ -41,7 +41,9 @@ def format_datetime(value, format='%d.%m.%Y - %H:%M:%S'):
         return ""
     return value.strftime(format)
 
+
 templates.env.filters['datetime'] = format_datetime
+
 
 @router.post("/login")
 async def login(
@@ -117,6 +119,7 @@ async def login_form(request: Request, current_user: Optional[User] = Depends(ge
         return RedirectResponse("/")
     return templates.TemplateResponse("login_register.html", {"request": request, "context": context})
 
+
 @router.post("/logout")
 async def logout(response: Response,):
 
@@ -130,6 +133,7 @@ async def upload_picture_form(request: Request, current_user: Optional[User] = D
         "user": current_user,  # Przekazujesz użytkownika do kontekstu
     }
     return templates.TemplateResponse("upload_picture.html", {"request": request, "context": context})
+
 
 @router.get("/edit-comment/{picture_id}/{picture_comment_id}", response_class=HTMLResponse,)
 async def upload_picture_form(
@@ -177,6 +181,7 @@ async def search_pictures(
     context = {"pictures": pictures, "user": current_user}
     return templates.TemplateResponse("index.html", {"request": request, "context": context})
 
+
 @router.get("/qr_code/{picture_id}", response_class=HTMLResponse)
 async def get_qr_code(
     request: Request,
@@ -187,13 +192,14 @@ async def get_qr_code(
     ), 
 ):
 
-    picture = await pictures_repo.get_picture(picture_id,db)
+    picture = await pictures_repo.get_picture(picture_id, db)
 
     context = {
         "user": current_user,
-        "picture" : picture
+        "picture": picture
     }
     return templates.TemplateResponse("qr_code.html", {"request": request, "context": context})
+
 
 @router.get("/edit-picture/{picture_id}", response_class=HTMLResponse,)
 async def upload_picture_form(
@@ -207,6 +213,6 @@ async def upload_picture_form(
     picture = await pictures_repo.get_picture(picture_id,db)
     context = {
         "user": current_user,
-        "picture" : picture
+        "picture": picture
     }
     return templates.TemplateResponse("edit_picture.html", {"request": request, "context": context})
