@@ -36,7 +36,7 @@
             <span>{{ tag.name }}</span>
             {% endfor %}
         </p>
-        <div class="text-center mt-4">
+        <div class="text-center mt-4 mb-2">
             <button onclick="generateQRCode()" class="btn btn-primary">Generate QR Code</button>
         </div>
         
@@ -55,7 +55,7 @@
                                 <span class="d-block font-weight-bold name">{{ comment.username }}</span>
                                 <span class="date text-black-50">Shared publicly - {{ comment['created_at'] | datetime }}</span>
                             </div>
-                            {% if context.user.username == comment.username or context.user.role == "moderator" %}
+                            {% if context.user.role == "administrator" or context.user.role == "moderator" %}
                             <div class="mr-1">
                                 <!-- Replace '#' with the link to the edit comment page -->
                                 <a href="/edit-comment/{{context['picture'].id}}/{{comment.picture_comment_id}}" class="btn btn-sm btn-primary">Edit</a>
@@ -64,7 +64,8 @@
                                 <!-- Replace '#' with the link to the edit comment page -->
                                 <a onclick="deleteComment({{ comment.picture_comment_id }})" class="btn btn-sm btn-primary text-white">Delete</a>
                             </div>
-                            {% elif context.user.role == "administrator" %}
+
+                            {% elif context.user.username == comment.username %}
                             <div class="mr-1">
                                 <!-- Replace '#' with the link to the edit comment page -->
                                 <a href="/edit-comment/{{context['picture'].id}}/{{comment.picture_comment_id}}" class="btn btn-sm btn-primary">Edit</a>
