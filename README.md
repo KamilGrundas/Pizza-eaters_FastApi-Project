@@ -27,13 +27,6 @@ PhotoShare is a comprehensive REST API built with FastAPI, designed to facilitat
 - Administrators and moderators have the authority to delete comments.
 - Comments include creation and edit timestamps, implementing a "one-to-many" relationship between photos and comments.
 
-### Additional Features
-
-- User profile routes displaying detailed information.
-- Users can edit their profiles and view their own information.
-- Administrator functionality to deactivate (ban) users.
-- Logout mechanism that adds access tokens to a blacklist.
-- Photo rating system, allowing users to rate photos on a scale from 1 to 5.
 
 ### Search and Filtering
 
