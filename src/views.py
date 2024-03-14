@@ -32,7 +32,6 @@ router = APIRouter(tags=["views"])
 
 
 app.add_middleware(AuthTokenMiddleware)
-app.mount("/static", StaticFiles(directory="static"), name="static")
 templates = Jinja2Templates(directory="templates")
 
 
@@ -42,7 +41,9 @@ def format_datetime(value, format='%d.%m.%Y - %H:%M:%S'):
         return ""
     return value.strftime(format)
 
+
 templates.env.filters['datetime'] = format_datetime
+
 
 @router.post("/login")
 async def login(
@@ -76,28 +77,6 @@ async def login(
         samesite="None",
         secure=True,
     )
-
-
-# @router.get("/", response_class=HTMLResponse)
-# async def get_home(
-#     request: Request,
-#     db: Session = Depends(get_db),
-#     current_user: Optional[User] = Depends(get_logged_user),
-# ):
-#     pictures = await pictures_repo.get_pictures(db=db)
-#     users_data = await asyncio.gather(*[get_user_by_id(picture.user_id, db) for picture in pictures])
-    
-#     users_dict = {user.id: user for user in users_data}
-    
-#     for picture in pictures:
-#         user = users_dict.get(picture.user_id)
-#         if user:
-#             picture.username = user.username
-#         else:
-#             picture.username = "Unknown"
-
-#     context = {"pictures": pictures, "user": current_user}
-#     return templates.TemplateResponse("index.html", {"request": request, "context": context})
 
 
 @router.get("/picture-detail/{picture_id}", response_class=HTMLResponse)
@@ -140,6 +119,7 @@ async def login_form(request: Request, current_user: Optional[User] = Depends(ge
         return RedirectResponse("/")
     return templates.TemplateResponse("login_register.html", {"request": request, "context": context})
 
+
 @router.post("/logout")
 async def logout(response: Response,):
 
@@ -153,6 +133,7 @@ async def upload_picture_form(request: Request, current_user: Optional[User] = D
         "user": current_user,  # Przekazujesz użytkownika do kontekstu
     }
     return templates.TemplateResponse("upload_picture.html", {"request": request, "context": context})
+
 
 @router.get("/edit-comment/{picture_id}/{picture_comment_id}", response_class=HTMLResponse,)
 async def upload_picture_form(
@@ -199,3 +180,39 @@ async def search_pictures(
 
     context = {"pictures": pictures, "user": current_user}
     return templates.TemplateResponse("index.html", {"request": request, "context": context})
+
+
+@router.get("/qr_code/{picture_id}", response_class=HTMLResponse)
+async def get_qr_code(
+    request: Request,
+    picture_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(
+        get_logged_user
+    ), 
+):
+
+    picture = await pictures_repo.get_picture(picture_id, db)
+
+    context = {
+        "user": current_user,
+        "picture": picture
+    }
+    return templates.TemplateResponse("qr_code.html", {"request": request, "context": context})
+
+
+@router.get("/edit-picture/{picture_id}", response_class=HTMLResponse,)
+async def upload_picture_form(
+    request: Request,
+    picture_id: int,
+    db: Session = Depends(get_db),
+    current_user: Optional[User] = Depends(
+        get_logged_user
+    ), 
+):
+    picture = await pictures_repo.get_picture(picture_id,db)
+    context = {
+        "user": current_user,
+        "picture": picture
+    }
+    return templates.TemplateResponse("edit_picture.html", {"request": request, "context": context})

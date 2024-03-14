@@ -2,35 +2,70 @@
 
 {% block content %}
 
+<style>
+    p.tags span {
+        background-color: #666;
+        color: #fff;
+        padding: 10px;
+        border-radius: 5px;
+        display: inline-block;
+    }
+</style>
+
 <div class="container mt-5">
 
     <div class="image-box-detail text-center">
         <p class="font-weight-bold">Author: {{ context.picture.username }}</p>
         <img src="{{ context['picture'].url }}" alt="" class="img-fluid rounded">
+        {% if context.user.role == "administrator" or context.user.id == context['picture'].user_id %}
+        <div class="mt-2">
+            <a onclick="deletePicture({{ context['picture'].id }})" class="btn btn-sm btn-primary text-white">Delete</a>
+        </div>
+        {% endif %}
         <p class="mt-4"><strong>Description:</strong></p>
         <p>{{ context['picture'].description or 'None' }}</p>
+        <div class="text-center mt-4">
+            {% if context["user"].role == "administrator" or context["user"].id == context["picture"].user_id %}
+            <a href='/edit-picture/{{context["picture"].id}}' class="btn btn-primary">Edit description</a>
+            {% endif %}
+
+        </div>
         <p class="mt-2"><strong>Tags:</strong></p>
-        <p>
+        <p class="tags">
             {% for tag in context['picture'].tags %}
-            {{tag.name}}
+            <span>{{ tag.name }}</span>
             {% endfor %}
         </p>
+        <div class="text-center mt-4">
+            <button onclick="generateQRCode()" class="btn btn-primary">Generate QR Code</button>
+        </div>
         
     </div>
+
 
     <div class="mt-5">
         <div class="d-flex justify-content-center row">
             <div class="col-md-12">
                 <div class="comment-section">
                     {% for comment in context['picture'].comments %}
+                    {% if comment.is_deleted == false %}
                     <div class="bg-white p-3 mb-2 rounded border">
                         <div class="d-flex flex-row user-info justify-content-between">
                             <div class="d-flex flex-column justify-content-start ml-2">
                                 <span class="d-block font-weight-bold name">{{ comment.username }}</span>
                                 <span class="date text-black-50">Shared publicly - {{ comment['created_at'] | datetime }}</span>
                             </div>
-                            {% if context.user.username == comment.username %}
-                            <div>
+                            {% if context.user.username == comment.username or context.user.role == "moderator" %}
+                            <div class="mr-1">
+                                <!-- Replace '#' with the link to the edit comment page -->
+                                <a href="/edit-comment/{{context['picture'].id}}/{{comment.picture_comment_id}}" class="btn btn-sm btn-primary">Edit</a>
+                            </div>
+                            <div class="mr-1">
+                                <!-- Replace '#' with the link to the edit comment page -->
+                                <a onclick="deleteComment({{ comment.picture_comment_id }})" class="btn btn-sm btn-primary text-white">Delete</a>
+                            </div>
+                            {% elif context.user.role == "administrator" %}
+                            <div class="mr-1">
                                 <!-- Replace '#' with the link to the edit comment page -->
                                 <a href="/edit-comment/{{context['picture'].id}}/{{comment.picture_comment_id}}" class="btn btn-sm btn-primary">Edit</a>
                             </div>
@@ -40,6 +75,7 @@
                             <p>{{ comment['text'] }}</p>
                         </div>
                     </div>
+                    {% endif %}
                     {% endfor %}
                     <div class="bg-light p-3 mb-4 rounded border">
                         <form id="CommentForm" method="POST" action="" class="d-flex flex-row align-items-start">
@@ -84,6 +120,77 @@
             alert('You need to sign in to comment.');
         });
     });
-    </script>
+
+    function generateQRCode() {
+        fetch('/wizards/pictures/generate_qr_code/', {
+            method: 'POST',
+            headers: {
+                'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({ picture_url: '{{ context["picture"].url }}' }),
+        })
+        .then(response => response.json())
+        .then(data => {
+            window.location.href = `/qr_code/{{ context['picture'].id }}`;
+        })
+        .catch(error => {
+            console.error('Error:', error);
+            alert('Failed to generate QR code.');
+        });
+    }
+
+    function deleteComment(commentId) {
+        if (confirm("Are you sure you want to delete this comment?")) {
+            fetch(`/wizards/pictures/{{ context["picture"].id }}/comments/${commentId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Include other headers as required, like authorization tokens
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                // Reload the page or update the comments section as needed
+                window.location.reload();
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete comment.');
+            });
+        }
+    }
+    function deletePicture(pictureId) {
+        if (confirm("Are you sure you want to delete this picture?")) {
+            fetch(`/wizards/pictures/${pictureId}`, {
+                method: 'DELETE',
+                headers: {
+                    'Content-Type': 'application/json',
+                    // Include other headers as required, like authorization tokens
+                },
+            })
+            .then(response => {
+                if (!response.ok) {
+                    throw new Error('Network response was not ok');
+                }
+                return response.json();
+            })
+            .then(data => {
+                console.log(data);
+                // Reload the page or update the comments section as needed
+                window.location.href = `/`;
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                alert('Failed to delete picture.');
+            });
+        }
+    }
+</script>
 
 {% endblock %}

@@ -17,9 +17,16 @@ from src.services.exceptions import (
     TAG_IS_ALREADY_ASSIGNED_TO_PICTURE_AND_PICTURE_HAS_ALREADY_5_TAGS_ASSIGNED,
 )
 
+
 async def get_pictures_by_tags(text: str, db: Session) -> List[Picture]:
 
-    pictures = db.query(Picture).join(Picture.tags).filter(Tag.name.ilike(f"%{text}%")).distinct().all()
+    pictures = (
+        db.query(Picture)
+        .join(Picture.tags)
+        .filter(Tag.name.ilike(f"%{text}%"))
+        .distinct()
+        .all()
+    )
     return pictures
 
 
@@ -87,13 +94,9 @@ async def get_picture(picture_id: int, db: Session) -> Picture:
 
 
 async def edit_picture_description(
-    picture_id: int, db: Session, new_description: str, author_id: int
+    picture_id: int, db: Session, new_description: str
 ) -> Picture:
-    picture = (
-        db.query(Picture)
-        .filter(Picture.id == picture_id, Picture.user_id == author_id)
-        .first()
-    )
+    picture = db.query(Picture).filter(Picture.id == picture_id).first()
     if picture != None:
         picture.description = new_description
         db.commit()
@@ -101,12 +104,8 @@ async def edit_picture_description(
     return picture
 
 
-async def delete_picture(picture_id: int, db: Session, author_id: int) -> Picture:
-    picture = (
-        db.query(Picture)
-        .filter(Picture.id == picture_id, Picture.user_id == author_id)
-        .first()
-    )
+async def delete_picture(picture_id: int, db: Session) -> Picture:
+    picture = db.query(Picture).filter(Picture.id == picture_id).first()
     if picture != None:
         picture.is_deleted = True
         db.commit()
